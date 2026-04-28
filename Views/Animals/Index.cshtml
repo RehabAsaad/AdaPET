@@ -1,0 +1,35 @@
+﻿@model IEnumerable<AdaPET.Models.Animal>
+
+@{
+    ViewData["Title"] = "Show Animals";
+}
+
+<h1>Animals Gallery</h1>
+
+<p>
+    <a asp-action="Add" class="btn btn-primary">Add New Animal</a>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Age</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Name</td>
+                <td>@item.Description</td>
+                <td>@item.Age</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.ID">Contact Owner</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
