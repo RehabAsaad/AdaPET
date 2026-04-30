@@ -41,6 +41,7 @@ namespace AdaPET.Controllers
                     var doctor = new Doctor
                     {
                         UserId = user.Id,
+                        Name = user.Name,
                         Specialization = Specialization
                     };
                     _context.Doctors.Add(doctor);

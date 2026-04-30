@@ -63,11 +63,11 @@
                     <div id="clinicsContainer">
                         <div class="row g-2 mb-2 clinic-row">
                             <div class="col-md-6">
-                                <input type="text" name="Clinics[0].Name" class="form-control clinic-name" placeholder="Clinic Name" />
+                                <input type="text" name="ClinicNames" class="form-control clinic-name" placeholder="Clinic Name" />
                                 <span class="clinic-name-error text-danger small"></span>
                             </div>
                             <div class="col-md-6">
-                                <input type="text" name="Clinics[0].location" class="form-control clinic-address" placeholder="Clinic Address" />
+                                <input type="text" name="ClinicAddresses" class="form-control clinic-address" placeholder="Clinic Address" />
                                 <span class="clinic-address-error text-danger small"></span>
                             </div>
                         </div>
@@ -345,11 +345,11 @@
             newRow.className = 'row g-2 mb-2 clinic-row';
             newRow.innerHTML = `
                 <div class="col-md-6">
-                    <input type="text" name="Clinics[${clinicCounter}].Name" class="form-control clinic-name" placeholder="Clinic Name" />
+                    <input type="text" name="ClinicNames" class="form-control clinic-name" placeholder="Clinic Name" />
                     <span class="clinic-name-error text-danger small"></span>
                 </div>
                 <div class="col-md-6">
-                    <input type="text" name="Clinics[${clinicCounter}].location" class="form-control clinic-address" placeholder="Clinic Address" />
+                    <input type="text" name="ClinicAddresses" class="form-control clinic-address" placeholder="Clinic Address" />
                     <span class="clinic-address-error text-danger small"></span>
                 </div>
             `;
