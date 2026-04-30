@@ -7,6 +7,9 @@
 		public string? Description { get; set; }
 		public string location { get; set; }
 		public string Phone { get; set; }
-		public ICollection<Doctor> Doctors { get; set; }
+        // الرابط (الـ Foreign Key)
+        public int DoctorId { get; set; }
+        public Doctor Doctor { get; set; }
+       // public ICollection<Doctor> Doctors { get; set; }
 	}
 }

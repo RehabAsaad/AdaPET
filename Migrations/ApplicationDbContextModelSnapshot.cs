@@ -72,6 +72,9 @@ namespace AdaPET.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("DoctorId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -86,19 +89,25 @@ namespace AdaPET.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DoctorId");
+
                     b.ToTable("Clinics");
                 });
 
             modelBuilder.Entity("AdaPET.Models.Doctor", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("UserId")
                         .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Specialization")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id");
+                    b.HasKey("UserId");
 
                     b.ToTable("Doctors");
                 });
@@ -117,9 +126,14 @@ namespace AdaPET.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserRole")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -130,21 +144,6 @@ namespace AdaPET.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("ClinicDoctor", b =>
-                {
-                    b.Property<int>("ClinicsId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("DoctorsId")
-                        .HasColumnType("int");
-
-                    b.HasKey("ClinicsId", "DoctorsId");
-
-                    b.HasIndex("DoctorsId");
-
-                    b.ToTable("ClinicDoctor");
                 });
 
             modelBuilder.Entity("AdaPET.Models.Animal", b =>
@@ -158,30 +157,31 @@ namespace AdaPET.Migrations
                     b.Navigation("Owner");
                 });
 
+            modelBuilder.Entity("AdaPET.Models.Clinic", b =>
+                {
+                    b.HasOne("AdaPET.Models.Doctor", "Doctor")
+                        .WithMany("Clinics")
+                        .HasForeignKey("DoctorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Doctor");
+                });
+
             modelBuilder.Entity("AdaPET.Models.Doctor", b =>
                 {
                     b.HasOne("AdaPET.Models.User", "User")
                         .WithMany()
-                        .HasForeignKey("Id")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("ClinicDoctor", b =>
+            modelBuilder.Entity("AdaPET.Models.Doctor", b =>
                 {
-                    b.HasOne("AdaPET.Models.Clinic", null)
-                        .WithMany()
-                        .HasForeignKey("ClinicsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("AdaPET.Models.Doctor", null)
-                        .WithMany()
-                        .HasForeignKey("DoctorsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("Clinics");
                 });
 
             modelBuilder.Entity("AdaPET.Models.User", b =>
