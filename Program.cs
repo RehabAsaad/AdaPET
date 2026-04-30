@@ -1,4 +1,6 @@
+using AdaPET.Controllers.Services;
 using AdaPET.Models;
+using AdaPET.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace AdaPET
@@ -9,33 +11,48 @@ namespace AdaPET
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // ========== كل الـ Services هنا (قبل builder.Build) ==========
 
-            // Add services to the container.
+            // 1. إضافة الـ Controllers والـ Views
             builder.Services.AddControllersWithViews();
-           
 
-
-            // 2. ربط المشروع بقاعدة البيانات باستخدام الـ Connection String
+            // 2. ربط المشروع بقاعدة البيانات
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            var app = builder.Build();
+            // 3. إضافة الـ Services الخاصة بالمشروع
+            builder.Services.AddScoped<IAuthService, AuthService>();
+            // builder.Services.AddScoped<IEmailSender, EmailSender>(); // لو في
 
-          //  app.UseSession();
+            // 4. إضافة Session Services (للتسجيل والدخول)
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddDistributedMemoryCache();
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(30);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
 
-            // Configure the HTTP request pipeline.
+            // ========== انتهى الـ Services ==========
+
+            var app = builder.Build();  // ✅ الآن كل الـ Services جاهزة
+
+            // ========== الـ Middleware هنا (بعد builder.Build) ==========
+
+            // استخدام Session (كـ Middleware مش Service)
+            app.UseSession();  // ✅ دي صح - تبقى هنا بعد builder.Build
+
+            // Configure the HTTP request pipeline
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
             app.UseRouting();
-
             app.UseAuthorization();
 
             app.MapControllerRoute(
