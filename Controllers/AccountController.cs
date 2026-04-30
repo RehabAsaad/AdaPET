@@ -1,5 +1,6 @@
 ﻿using AdaPET.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace AdaPET.Controllers
 {
@@ -71,7 +72,7 @@ namespace AdaPET.Controllers
                 }
 
                 TempData["Success"] = "Account created successfully!";
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("login", "Account");
             }
             catch (Exception ex)
             {
@@ -83,6 +84,42 @@ namespace AdaPET.Controllers
 
                 ModelState.AddModelError("", $"Error: {ex.Message}");
                 return View("Register", user);
+            }
+        }
+        [HttpGet]
+        public async Task<IActionResult> login()
+        {
+            return View();
+
+        }
+        [HttpPost]
+        public async Task<IActionResult> login(string email, string password)
+        {
+            // 1. التحقق من أن الحقول ليست فارغة
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+            {
+                ModelState.AddModelError("", "Email and password are required.");
+                return View(); // سيبقى في نفس الصفحة
+            }
+
+            // 2. البحث عن المستخدم
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+            // 3. التحقق من صحة البيانات
+            if (user != null && user.Password == password)
+            {
+                TempData["Success"] = "Login successful!";
+                return RedirectToAction("homeFeed", "Home");
+            }
+            else
+            {
+                // 4. رسالة خطأ عامة
+                ModelState.AddModelError("", "Invalid email or password.");
+
+                // ✅ المهم هنا: إعادة القيم المدخلة للـ View مع رسالة الخطأ
+                // سنستخدم ViewBag أو ViewData لتمرير الإيميل الذي أدخله المستخدم
+                ViewBag.Email = email;
+                return View();
             }
         }
     }
