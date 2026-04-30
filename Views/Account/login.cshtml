@@ -123,17 +123,18 @@
 
         <!-- ✅ نموذج الدخول بعد التعديل -->
         <form method="post" asp-action="login" asp-controller="Account">
-            <!-- ✅ عرض رسائل الخطأ العامة (مثل إيميل أو باسورد خاطئ) -->
+            <!-- ✅ عرض رسائل الخطأ العامة -->
             <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert">
                 <!-- رسالة الخطأ ستظهر هنا تلقائياً -->
             </div>
 
             <div class="mb-3">
                 <label for="email" class="form-label">Email Address</label>
+                <!-- ✅ تم إزالة value="@ViewBag.Email" -->
                 <input type="email" name="Email" id="email"
                        class="form-control custom-input"
                        placeholder="name@example.com"
-                       value="@ViewBag.Email"
+                       autocomplete="off"
                        required>
             </div>
 
@@ -142,9 +143,10 @@
                 <input type="password" name="Password" id="password"
                        class="form-control custom-input"
                        placeholder="********"
+                       autocomplete="off"
                        required>
                 <div class="text-end mt-1">
-                    <a href="#" class="small text-muted text-decoration-none">Forgot password?</a>
+                    <a asp-action="ForgotPassword" class="small text-muted text-decoration-none">Forgot password?</a>
                 </div>
             </div>
 
@@ -153,7 +155,7 @@
             </div>
 
             <div class="text-center footer-text">
-                Don't have an account? <a href="/Account/Register">Sign up</a>
+                Don't have an account? <a asp-action="Register">Sign up</a>
             </div>
         </form>
     </div>
