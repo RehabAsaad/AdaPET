@@ -1,0 +1,36 @@
+﻿@model AdaPET.Models.Animal
+
+<div class="container mt-5">
+    <div class="card shadow-lg border-0 mx-auto" style="max-width: 600px; border-radius: 20px; overflow: hidden;">
+        <div class="row g-0">
+            <div class="col-md-5">
+                <img src="@Model.ImgURL" class="img-fluid h-100" style="object-fit: cover;" alt="@Model.Name">
+            </div>
+            <div class="col-md-7">
+                <div class="card-body p-4">
+                    <h3 class="fw-bold mb-3">Contact Owner</h3>
+                    <p class="text-muted mb-4">You are inquiring about <strong>@Model.Name</strong></p>
+                    
+                    <div class="mb-3">
+                        <label class="text-secondary small d-block">Owner Name</label>
+                        <span class="fw-bold">@Model.Owner.Name</span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="text-secondary small d-block">Phone Number</label>
+                        <span class="fw-bold text-primary">@Model.Owner.phone</span>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <a href="tel:@Model.Owner.phone" class="btn btn-success p-2" style="border-radius: 10px;">
+                            Call Owner
+                        </a>
+                        <a asp-action="Index" class="btn btn-outline-secondary p-2" style="border-radius: 10px;">
+                            Back to Gallery
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

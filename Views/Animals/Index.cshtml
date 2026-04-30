@@ -1,35 +1,107 @@
 ﻿@model IEnumerable<AdaPET.Models.Animal>
 
 @{
-    ViewData["Title"] = "Show Animals";
+    // جلب الـ ID بتاع المستخدم الحالي من السيسشن للمقارنة
+    var currentUserId = Context.Session.GetInt32("UserId");
 }
 
-<h1>Animals Gallery</h1>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-dark fw-bold">Animals Gallery</h2>
+        <a asp-action="Add" class="btn btn-primary px-4 shadow-sm">Add New Animal</a>
+    </div>
 
-<p>
-    <a asp-action="Add" class="btn btn-primary">Add New Animal</a>
-</p>
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Age</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
+    <div class="row">
         @foreach (var item in Model)
         {
-            <tr>
-                <td>@item.Name</td>
-                <td>@item.Description</td>
-                <td>@item.Age</td>
-                <td>
-                    <a asp-action="Details" asp-route-id="@item.ID">Contact Owner</a>
-                </td>
-            </tr>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 border-0 shadow-sm animal-card" style="border-radius: 15px; transition: 0.3s; overflow: hidden;">
+                    
+                    @*  لو هو الأونر مش هيوديه لصفحة تانية *@
+                    @if (item.OwnerId == currentUserId)
+                    {
+                        <div style="cursor: default;">
+                            <div style="position: relative;">
+                                <img src="@(string.IsNullOrEmpty(item.ImgURL) ? "/images/default-pet.png" : item.ImgURL)"
+                                     class="card-img-top" alt="@item.Name"
+                                     style="height: 250px; object-fit: contain; background-color: #f8f9fa;">
+                                
+                                @* شارات الحالة ونوع الحيوان *@
+                                @if (item.IsAdopted)
+                                {
+                                    <span class="badge bg-secondary position-absolute" style="top: 15px; left: 15px; border-radius: 20px; padding: 8px 15px;">Adopted ❤️</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success position-absolute" style="top: 15px; left: 15px; border-radius: 20px; padding: 8px 15px;">Available</span>
+                                }
+                                <span class="badge bg-info text-white position-absolute" style="top: 15px; right: 15px; border-radius: 20px; padding: 8px 15px;">@item.Description</span>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        @* لو يوزر عادي يفتح صفحة التواصل *@
+                        <a asp-action="ContactOwner" asp-route-id="@item.ID" style="text-decoration: none; color: inherit;">
+                            <div style="position: relative;">
+                                <img src="@(string.IsNullOrEmpty(item.ImgURL) ? "/images/default-pet.png" : item.ImgURL)"
+                                     class="card-img-top" alt="@item.Name"
+                                     style="height: 250px; object-fit: contain; background-color: #f8f9fa;">
+                                
+                                @if (item.IsAdopted)
+                                {
+                                    <span class="badge bg-secondary position-absolute" style="top: 15px; left: 15px; border-radius: 20px; padding: 8px 15px;">Adopted ❤️</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success position-absolute" style="top: 15px; left: 15px; border-radius: 20px; padding: 8px 15px;">Available</span>
+                                }
+                                <span class="badge bg-info text-white position-absolute" style="top: 15px; right: 15px; border-radius: 20px; padding: 8px 15px;">@item.Description</span>
+                            </div>
+                        </a>
+                    }
+
+                    <div class="card-body bg-white text-center">
+                        <h5 class="card-title fw-bold text-dark mb-1">@item.Name</h5>
+                        <p class="card-text text-muted small mb-2">@item.Age years old</p>
+
+                        @if (item.OwnerId == currentUserId)
+                        {
+                            <div class="d-grid gap-2 mt-3">
+                                <form asp-action="ToggleAdoption" asp-route-id="@item.ID" method="post">
+                                    <button type="submit" class="btn @(item.IsAdopted ? "btn-outline-warning" : "btn-outline-success") btn-sm w-100 mb-2" style="border-radius: 10px;">
+                                        @(item.IsAdopted ? "Make Available" : "Mark as Adopted")
+                                    </button>
+                                </form>
+
+                                <form asp-action="Delete" asp-route-id="@item.ID" method="post" onsubmit="return confirm('Are you sure?')">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm w-100" style="border-radius: 10px;">Delete Pet</button>
+                                </form>
+                            </div>
+                        }
+                        else if (!item.IsAdopted)
+                        {
+                            <a asp-action="ContactOwner" asp-route-id="@item.ID" class="btn btn-outline-primary btn-sm w-100 mt-2" style="border-radius: 10px;">Contact Owner</a>
+                        }
+                        else
+                        {
+                            <div class="alert alert-light p-1 mt-2 mb-0 small text-muted" style="border-radius: 10px;">Happy together!</div>
+                        }
+                    </div>
+                </div>
+            </div>
         }
-    </tbody>
-</table>
+    </div>
+</div>
+
+<style>
+    .animal-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
+    }
+
+    .animal-card form, .animal-card a.btn {
+        position: relative;
+        z-index: 5;
+    }
+</style>

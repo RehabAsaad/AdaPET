@@ -59,11 +59,12 @@ namespace AdaPET.Controllers
 
             var result = await _authService.LoginAsync(model);
 
-            if (result.Success)
+            if (result.Success && result.User != null)
             {
                 // TODO: إضافة Session أو Cookie أو JWT هنا
+                HttpContext.Session.SetInt32("UserId", result.User.Id);
                 TempData["Success"] = "Login successful!";
-                return RedirectToAction("homeFeed", "Home");
+                return RedirectToAction("Index", "Animals");
             }
 
             ModelState.AddModelError("", result.ErrorMessage);

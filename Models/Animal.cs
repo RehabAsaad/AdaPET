@@ -15,8 +15,10 @@ namespace AdaPET.Models
 		[ForeignKey("Owner")]
 		public int OwnerId { get; set; }
 		public User Owner { get; set; }
+        [NotMapped]
+        public IFormFile ImageFile { get; set; }
 
-		public DateTime? AdoptedDate { get; set; }
+        public DateTime? AdoptedDate { get; set; }
 
 	}
 }

@@ -1,57 +1,57 @@
 ﻿@model AdaPET.Models.Animal
 
 @{
-    
     ViewData["Title"] = "Add New Animal";
 }
 
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">Add a New Animal for Adoption</h3>
+            <div class="card shadow border-0" style="border-radius: 15px;">
+                <div class="card-header bg-primary text-white" style="border-top-left-radius: 15px; border-top-right-radius: 15px;">
+                    <h3 class="mb-0 text-center">Add a New Animal for Adoption</h3>
                 </div>
-                <div class="card-body">
-                    @* الفورم بتبعت البيانات للأكشن اللي اسمه Add في الكنترولر *@
-                    <form asp-action="Add" method="post">
+                <div class="card-body p-4">
+                   
+                    <form asp-action="Add" method="post" enctype="multipart/form-data">
                         
-                        @* ملخص لأخطاء الإدخال لو ظهرت *@
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-                        @* حقل إدخال اسم الحيوان *@
+                       
                         <div class="mb-3">
-                            <label asp-for="Name" class="form-label font-weight-bold">Animal Name</label>
+                            <label asp-for="Name" class="form-label fw-bold">Animal Name</label>
                             <input asp-for="Name" class="form-control" placeholder="e.g. Bella, Max..." />
                             <span asp-validation-for="Name" class="text-danger"></span>
                         </div>
 
-                        @* حقل إدخال عمر الحيوان *@
+                        
                         <div class="mb-3">
-                            <label asp-for="Age" class="form-label font-weight-bold">Age (Years)</label>
+                            <label asp-for="Age" class="form-label fw-bold">Age (Years)</label>
                             <input asp-for="Age" class="form-control" type="number" min="0" />
                             <span asp-validation-for="Age" class="text-danger"></span>
                         </div>
 
-                        @* حقل إدخال وصف الحيوان *@
+                        
                         <div class="mb-3">
-                            <label asp-for="Description" class="form-label font-weight-bold">Description</label>
-                            <textarea asp-for="Description" class="form-control" rows="4" placeholder="Tell us more about the pet..."></textarea>
+                            <label asp-for="Description" class="form-label fw-bold">Description</label>
+                            <textarea asp-for="Description" class="form-control" rows="3" placeholder="Tell us more about the pet..."></textarea>
                             <span asp-validation-for="Description" class="text-danger"></span>
                         </div>
 
-                        @* حقل إدخال رابط الصورة *@
-                        <div class="mb-3">
-                            <label asp-for="ImgURL" class="form-label font-weight-bold">Image URL</label>
-                            <input asp-for="ImgURL" class="form-control" placeholder="Paste image link here..." />
+                       
+                        <div class="mb-4">
+                            <label asp-for="ImageFile" class="form-label fw-bold">Upload Pet Photo</label>
+                            
+                            <input asp-for="ImageFile" type="file" class="form-control" accept="image/*" />
+                            <small class="text-muted">Select an image from your device (jpg, png, etc.)</small>
+                            <span asp-validation-for="ImageFile" class="text-danger"></span>
                         </div>
 
                         <hr />
 
-                        @* أزرار الحفظ والرجوع *@
-                        <div class="d-flex justify-content-between">
-                            <button type="submit" class="btn btn-success px-5">Save Animal</button>
-                            <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a asp-action="Index" class="btn btn-outline-secondary px-4">Back to List</a>
+                            <button type="submit" class="btn btn-success px-5 shadow-sm">Save Animal</button>
                         </div>
                     </form>
                 </div>
@@ -62,7 +62,6 @@
 
 @section Scripts {
     @{
-        // استدعاء ملفات التحقق من البيانات في المتصفح (Validation)
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 }
