@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using AdaPET.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace AdaPET.Controllers
 {
@@ -13,24 +14,32 @@ namespace AdaPET.Controllers
             _context = context;
         }
 
-        // عرض قائمة جميع الحيوانات في الجاليري
+        // show all animals
         public async Task<IActionResult> Index()
         {
             var animalsList = await _context.Animals.ToListAsync();
             return View(animalsList);
         }
 
-        // فتح صفحة إضافة حيوان جديد (GET)
+        // Add animal 
         [HttpGet]
         public IActionResult Add()
         {
             return View();
         }
 
-        // استقبال بيانات الحيوان الجديد وحفظ الصورة وربطه بصاحبه (POST)
+        // new animal data
         [HttpPost]
         public async Task<IActionResult> Add(Animal animal)
         {
+            // get user id 
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             if (animal.ImageFile != null)
             {
                 string folder = "images/";
@@ -47,21 +56,14 @@ namespace AdaPET.Controllers
                 animal.ImgURL = "/" + folder + uniqueFileName;
             }
 
-            var userId = HttpContext.Session.GetInt32("UserId");
+            animal.OwnerId = int.Parse(userId);
+            _context.Animals.Add(animal);
+            await _context.SaveChangesAsync();
 
-            if (userId != null)
-            {
-                animal.OwnerId = userId.Value;
-                _context.Animals.Add(animal);
-                await _context.SaveChangesAsync();
-
-                return RedirectToAction("Index");
-            }
-
-            return RedirectToAction("Login", "Account");
+            return RedirectToAction("Index");
         }
 
-        // عرض صفحة التواصل مع صاحب الحيوان وعرض بياناته
+        // View owner
         public async Task<IActionResult> ContactOwner(int id)
         {
             var animal = await _context.Animals
@@ -76,7 +78,7 @@ namespace AdaPET.Controllers
             return View(animal);
         }
 
-        // حذف حيوان من النظام بناءً على الـ ID الخاص به
+        // delete animal
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
         {
@@ -89,7 +91,7 @@ namespace AdaPET.Controllers
             return RedirectToAction("Index");
         }
 
-        // تبديل حالة الحيوان بين (متاح للتبني) أو (تم التبني)
+        //adapted or not 
         [HttpPost]
         public async Task<IActionResult> ToggleAdoption(int id)
         {
@@ -97,6 +99,14 @@ namespace AdaPET.Controllers
             if (animal != null)
             {
                 animal.IsAdopted = !animal.IsAdopted;
+                if (animal.IsAdopted)
+                {
+                    animal.AdoptedDate = DateTime.Now;
+                }
+                else
+                {
+                    animal.AdoptedDate = null;
+                }
                 _context.Update(animal);
                 await _context.SaveChangesAsync();
             }

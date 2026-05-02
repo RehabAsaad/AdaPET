@@ -1,7 +1,10 @@
 ﻿using AdaPET.Models;
 using AdaPET.Models.ViewModels;
 using AdaPET.Services;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace AdaPET.Controllers
 {
@@ -14,7 +17,6 @@ namespace AdaPET.Controllers
             _authService = authService;
         }
 
-        // ==================== REGISTER ====================
         [HttpGet]
         public IActionResult Register()
         {
@@ -26,26 +28,27 @@ namespace AdaPET.Controllers
         {
             if (ModelState.IsValid)
             {
-                // محاولة التسجيل
                 var result = await _authService.RegisterAsync(model);
 
-                if (result.Success)
+                if (result.Success && result.User != null)
                 {
-                    TempData["Success"] = "Account created successfully!";
-                    return RedirectToAction("Login"); // ✅ مسار 1
+                    await SignInUser(result.User, false);
+                    HttpContext.Session.SetInt32("UserId", result.User.Id);
+                    TempData["Success"] = "SignIn Success!";
+                    return RedirectToAction("Index", "Animals");
                 }
 
                 ModelState.AddModelError("", result.ErrorMessage);
-                return View(model); // ✅ مسار 2
+                return View(model);
             }
 
-            return View(model); // ✅ مسار 3 (لما الـ ModelState يكون Invalid)
+            return View(model);
         }
 
-        // ==================== LOGIN ====================
         [HttpGet]
-        public IActionResult Login()
+        public IActionResult Login(string? returnUrl = null)
         {
+            ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
 
@@ -61,9 +64,16 @@ namespace AdaPET.Controllers
 
             if (result.Success && result.User != null)
             {
-                // TODO: إضافة Session أو Cookie أو JWT هنا
+                await SignInUser(result.User, model.RememberMe);
                 HttpContext.Session.SetInt32("UserId", result.User.Id);
-                TempData["Success"] = "Login successful!";
+
+                TempData["Success"] = "SignUp success!";
+
+                if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
+                {
+                    return Redirect(model.ReturnUrl);
+                }
+
                 return RedirectToAction("Index", "Animals");
             }
 
@@ -71,13 +81,41 @@ namespace AdaPET.Controllers
             return View(model);
         }
 
-        // ==================== FORGOT PASSWORD ====================
-        [HttpGet]
-        public IActionResult ForgotPassword()
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            HttpContext.Session.Clear();
+            TempData["Success"] = "Logout success!";
+            return RedirectToAction("Index", "Home");
+        }
+
+        public IActionResult AccessDenied()
         {
             return View();
         }
 
-        
+        private async Task SignInUser(User user, bool isPersistent = false)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.Name),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Role, user.UserRole ?? "User")
+            };
+
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var authProperties = new AuthenticationProperties
+            {
+                IsPersistent = isPersistent,
+                ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(isPersistent ? 1440 : 30)
+            };
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(claimsIdentity),
+                authProperties
+            );
+        }
     }
 }

@@ -14,7 +14,7 @@ namespace AdaPET.Models
 		public DbSet<Clinic> Clinics { get; set; }
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 		{
-			optionsBuilder.UseSqlServer("Server=.\\SQLEXPRESS;Database=PetAdaptDB;Trusted_Connection=True;TrustServerCertificate=True;");
+			optionsBuilder.UseSqlServer("Server=DESKTOP-BFVG5BL;Database=AdaPETDb;Trusted_Connection=True;TrustServerCertificate=True;");
 			base.OnConfiguring(optionsBuilder);
 		}
 

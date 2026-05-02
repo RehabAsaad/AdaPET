@@ -5,14 +5,14 @@ namespace AdaPET.Models
 {
     public class Doctor
     {
-        [Key] // ده معناه إن الحقل ده هو الـ Primary Key
-        [ForeignKey("User")] // وده معناه إنه في نفس الوقت Foreign Key لجدول اليوزر
-        [DatabaseGenerated(DatabaseGeneratedOption.None)] // مهم جداً: بنقول للداتابيز متزوديش الرقم ده من عندك
+        [Key] 
+        [ForeignKey("User")] //doctor primary key is a foreign key form user table
+        [DatabaseGenerated(DatabaseGeneratedOption.None)] 
         public int UserId { get; set; }
         public string Name { get; set; }
         public string Specialization { get; set; }
-        // ربط الدكتور باليوزر (علاقة One-to-One)
-
+      //User , Doctor relation 1:1
+        [ForeignKey("UserId")]
         public User User { get; set; }
         public ICollection<Clinic> Clinics { get; set; }
 

@@ -27,15 +27,15 @@ namespace AdaPET.Models.ViewModels
 
         public string UserRole { get; set; } // "Doctor" or "Patient"
 
-        // خصائص إضافية للدكتور
+     
         public string? Specialization { get; set; }
         public List<ClinicViewModel>? Clinics { get; set; }
     }
 
     public class ClinicViewModel
     {
-        public string ?Name { get; set; }
-        public string ?Address { get; set; }
+        public string? Name { get; set; }
+        public string? Address { get; set; }
     }
 }
 
