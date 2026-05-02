@@ -1,0 +1,85 @@
+﻿@model AdaPET.Models.ViewModels.DoctorsListViewModel
+@{
+    ViewData["Title"] = "Doctors and Clinics";
+}
+
+<h2>Our Doctors and Their Clinics</h2>
+
+<div class="container mt-4">
+    @if (Model.Doctors.Any())
+    {
+        <div class="row">
+            @foreach (var doctor in Model.Doctors)
+            {
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-primary text-white">
+                            <h4>Dr. @doctor.DoctorName</h4>
+                            <h6>Specialization: @doctor.Specialization</h6>
+                        </div>
+                        <div class="card-body">
+                            @if (doctor.Clinics.Any())
+                            {
+                                <h5>Clinics:</h5>
+                                @foreach (var clinic in doctor.Clinics)
+                                {
+                                    <div class="card mt-2">
+                                        <div class="card-body">
+                                            <h6 class="card-title">@clinic.Name</h6>
+                                            <p class="card-text">
+                                                <strong>Description:</strong> @(clinic.Description ?? "N/A")<br />
+                                                <strong>Location:</strong> @clinic.Location<br />
+                                                <strong>Phone:</strong> @clinic.Phone
+                                            </p>
+                                            @if (clinic.CanEdit)
+                                            {
+                                                <a asp-action="EditClinic" 
+                                                   asp-route-id="@clinic.ClinicId" 
+                                                   class="btn btn-warning btn-sm">
+                                                    ✏️ Edit Clinic
+                                                </a>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <p class="text-muted">No clinics assigned yet.</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p>No doctors found in the system.</p>
+    }
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<style>
+    .card-header {
+        margin-bottom: 0;
+    }
+    .card {
+        transition: transform 0.2s;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .btn-warning:hover {
+        background-color: #ffc107;
+        transform: scale(1.02);
+    }
+</style>

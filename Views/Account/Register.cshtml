@@ -1,105 +1,111 @@
-﻿@model AdaPET.Models.ViewModels.RegisterViewModel 
+﻿@model AdaPET.Models.ViewModels.RegisterViewModel
+
 @{
-    ViewData["Title"] = "Sign Up - AdaPET";
+    ViewData["Title"] = "New account";
 }
 
-<!-- استدعاء الستايلات -->
-<link rel="stylesheet" href="~/css/register.css" />
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4>Create new account</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Register" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6 shadow-sm p-4 border rounded bg-light">
-            <h2 class="text-center text-primary fw-bold mb-4">Create Your Account</h2>
-
-            <form asp-action="Register" method="post" id="registerForm">
-
-                <div class="mb-3">
-                    <label asp-for="Name" class="form-label fw-bold">Full Name</label>
-                    <input asp-for="Name" class="form-control" placeholder="Enter your name" />
-                    <span asp-validation-for="Name" class="text-danger small"></span>
-                </div>
-
-                <div class="mb-3">
-                    <label asp-for="Email" class="form-label fw-bold">Email Address</label>
-                    <input asp-for="Email" type="email" class="form-control" placeholder="example@mail.com" autocomplete="off" />
-                    <span asp-validation-for="Email" class="text-danger small"></span>
-                </div>
-
-                <div class="mb-3">
-                    <label asp-for="Phone" class="form-label fw-bold">Phone Number</label>
-                    <input asp-for="Phone" class="form-control" placeholder="01xxxxxxxxx" />
-                    <span asp-validation-for="Phone" class="text-danger small"></span>
-                </div>
-
-                <div class="mb-3">
-                    <label asp-for="Password" class="form-label fw-bold">Password</label>
-                    <input asp-for="Password" type="password" class="form-control" placeholder="********" id="Password" />
-                    <span asp-validation-for="Password" class="text-danger small"></span>
-                </div>
-
-                <div class="mb-3">
-                    <label asp-for="ConfirmPassword" class="form-label fw-bold">Confirm Password</label>
-                    <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="********" />
-                    <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
-                </div>
-
-                <hr />
-
-                <div class="mb-3">
-                    <label class="form-label fw-bold text-info">Account Type</label>
-                    <select id="roleSelect" name="UserRole" class="form-select border-info">
-                        <option value="Patient">Pet Owner (User)</option>
-                        <option value="Doctor">Veterinary Doctor</option>
-                    </select>
-                </div>
-
-                <!-- حقول الدكتور -->
-                <div id="doctorFields" class="mb-3 p-3 border border-warning rounded" style="display: none; background-color: #fffdec;">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold text-warning">Specialization <span class="text-danger">*</span></label>
-                        <input type="text" id="Specialization" name="Specialization" class="form-control" placeholder="e.g., Surgery, Dermatology, Cardiology" />
-                        <span id="specializationError" class="text-danger small"></span>
+                    <div class="form-group mb-3">
+                        <label asp-for="Name">Name</label>
+                        <input asp-for="Name" class="form-control" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
                     </div>
 
-                    <hr />
-                    <label class="form-label fw-bold">Your Clinics <span class="text-danger">*</span></label>
-                    <div id="clinicsContainer">
-                        <div class="row g-2 mb-2 clinic-row">
-                            <div class="col-md-6">
-                                <input type="text" name="Clinics[0].Name" class="form-control clinic-name" placeholder="Clinic Name" />
-                                <span class="clinic-name-error text-danger small"></span>
+                    <div class="form-group mb-3">
+                        <label asp-for="Email">Email</label>
+                        <input asp-for="Email" class="form-control" dir="ltr" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Phone">Phone Number </label>
+                        <input asp-for="Phone" class="form-control" dir="ltr" />
+                        <span asp-validation-for="Phone" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Password">Password</label>
+                        <input asp-for="Password" class="form-control" type="password" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="ConfirmPassword">Confirm Password</label>
+                        <input asp-for="ConfirmPassword" class="form-control" type="password" />
+                        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="UserRole">User Role</label>
+                        <select asp-for="UserRole" class="form-control" id="UserRole">
+                            <option value="User">User</option>
+                            <option value="Doctor">Doctor</option>
+                        </select>
+                        <span asp-validation-for="UserRole" class="text-danger"></span>
+                    </div>
+
+                    <div id="doctorFields" style="display: none;">
+                        <div class="form-group mb-3">
+                            <label asp-for="Specialization">Specialization</label>
+                            <input asp-for="Specialization" class="form-control" />
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label>Clinics</label>
+                            <div id="clinicsContainer">
+                                <div class="clinic-entry mb-2">
+                                    <input type="text" name="Clinics[0].Name" class="form-control mb-1" placeholder="Clinic Name" />
+                                    <input type="text" name="Clinics[0].Address" class="form-control" placeholder="Clinic Location " />
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                <input type="text" name="Clinics[0].Address" class="form-control clinic-address" placeholder="Clinic Address" />
-                                <span class="clinic-address-error text-danger small"></span>
-                            </div>
+                            <button type="button" id="addClinicBtn" class="btn btn-sm btn-secondary">+ Add another Clinic</button>
                         </div>
                     </div>
-                    <button type="button" class="btn btn-sm btn-outline-secondary mt-2" id="addClinicBtn">+ Add Another Clinic</button>
-                    <div id="clinicsGlobalError" class="text-danger small mt-2"></div>
-                </div>
 
-                <div class="d-grid mt-4">
-                    <button type="submit" class="btn btn-success btn-lg fw-bold">Sign Up Now</button>
-                </div>
-
-                <div class="text-center mt-3">
-                    <span>Already have an account? </span>
-                    <a asp-action="Login" class="text-decoration-none">Log In</a>
-                </div>
-            </form>
+                    <button type="submit" class="btn btn-primary">Register</button>
+                    <a asp-action="Login" class="btn btn-secondary">have an account! log in</a>
+                </form>
+            </div>
         </div>
     </div>
 </div>
+
+<script>
+    document.getElementById('UserRole').addEventListener('change', function () {
+        var doctorFields = document.getElementById('doctorFields');
+        doctorFields.style.display = this.value === 'Doctor' ? 'block' : 'none';
+    });
+
+    var clinicIndex = 1;
+    document.getElementById('addClinicBtn')?.addEventListener('click', function () {
+        var container = document.getElementById('clinicsContainer');
+        var newEntry = document.createElement('div');
+        newEntry.className = 'clinic-entry mb-2';
+        newEntry.innerHTML = `
+                <input type="text" name="Clinics[${clinicIndex}].Name" class="form-control mb-1" placeholder="اسم العيادة" />
+                <input type="text" name="Clinics[${clinicIndex}].Address" class="form-control" placeholder="عنوان العيادة" />
+                <button type="button" class="btn btn-sm btn-danger mt-1 removeClinicBtn">حذف</button>
+            `;
+        container.appendChild(newEntry);
+        clinicIndex++;
+
+        newEntry.querySelector('.removeClinicBtn').addEventListener('click', function () {
+            newEntry.remove();
+        });
+    });
+</script>
 
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-
-    <!-- استدعاء ملفات الجافاسكريبت -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.21.0/jquery.validate.min.js"></script>
-    <script src="~/js/doctor-validation.js"></script>
-    <script src="~/js/register.js"></script>
 }
