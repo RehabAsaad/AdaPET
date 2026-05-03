@@ -149,7 +149,7 @@ namespace AdaPET.Migrations
             modelBuilder.Entity("AdaPET.Models.Animal", b =>
                 {
                     b.HasOne("AdaPET.Models.User", "Owner")
-                        .WithMany()
+                        .WithMany("Animals")
                         .HasForeignKey("OwnerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -171,8 +171,8 @@ namespace AdaPET.Migrations
             modelBuilder.Entity("AdaPET.Models.Doctor", b =>
                 {
                     b.HasOne("AdaPET.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
+                        .WithOne("Doctor")
+                        .HasForeignKey("AdaPET.Models.Doctor", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -182,6 +182,14 @@ namespace AdaPET.Migrations
             modelBuilder.Entity("AdaPET.Models.Doctor", b =>
                 {
                     b.Navigation("Clinics");
+                });
+
+            modelBuilder.Entity("AdaPET.Models.User", b =>
+                {
+                    b.Navigation("Animals");
+
+                    b.Navigation("Doctor")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

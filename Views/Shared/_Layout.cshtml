@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+﻿
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -25,13 +27,104 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
-                        
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Animals" asp-action="Index">Show Animals</a>
+                        </li>
+
+                        <!-- Doctors & Clinics Button - Shows for ALL authenticated users -->
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Doctor" asp-action="Index">
+                                    👨‍⚕️ Doctors & Clinics
+                                </a>
+                            </li>
+                        }
+
+                        <!-- Admin Panel - Only for Admin role -->
+                        @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-dark" href="#" id="adminDropdown" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false">
+                                    👑 Admin Panel
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+                                    <li><a class="dropdown-item" asp-controller="Doctor" asp-action="Index">Manage Doctors</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Animals" asp-action="Add">Add Animal</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Animals" asp-action="Index">Manage Animals</a></li>
+                                </ul>
+                            </li>
+                        }
+                    </ul>
+
+                    <!-- Right side - Authentication links -->
+                    <ul class="navbar-nav ms-auto">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-dark" href="#" id="userDropdown" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false">
+                                    👋 Welcome, @User.Identity.Name
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                    <li>
+                                        <span class="dropdown-item-text">
+                                            <strong>Email:</strong> @User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value<br />
+                                            <strong>Role:</strong>
+                                            <span class="badge bg-info">
+                                                @User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value
+                                            </span>
+                                        </span>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item text-danger" asp-controller="Account" asp-action="Logout">
+                                            🚪 Logout
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Login"
+                                   asp-route-returnUrl="@Context.Request.Path">
+                                    🔑 Login
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Register">
+                                    📝 Register
+                                </a>
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>
         </nav>
     </header>
+
     <div class="container">
+        <!-- Success Message Display -->
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <!-- Error Message Display -->
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
@@ -42,9 +135,10 @@
             &copy; 2026 - AdaPET - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

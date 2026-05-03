@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AdaPET.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260429225155_d2")]
-    partial class d2
+    [Migration("20260502132931_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -102,6 +102,10 @@ namespace AdaPET.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Specialization")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -148,7 +152,7 @@ namespace AdaPET.Migrations
             modelBuilder.Entity("AdaPET.Models.Animal", b =>
                 {
                     b.HasOne("AdaPET.Models.User", "Owner")
-                        .WithMany("OwnedAnimals")
+                        .WithMany("Animals")
                         .HasForeignKey("OwnerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -170,8 +174,8 @@ namespace AdaPET.Migrations
             modelBuilder.Entity("AdaPET.Models.Doctor", b =>
                 {
                     b.HasOne("AdaPET.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
+                        .WithOne("Doctor")
+                        .HasForeignKey("AdaPET.Models.Doctor", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -185,7 +189,10 @@ namespace AdaPET.Migrations
 
             modelBuilder.Entity("AdaPET.Models.User", b =>
                 {
-                    b.Navigation("OwnedAnimals");
+                    b.Navigation("Animals");
+
+                    b.Navigation("Doctor")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }
