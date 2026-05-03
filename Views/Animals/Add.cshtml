@@ -1,48 +1,76 @@
 ﻿@model AdaPET.Models.Animal
 
-@{
-    ViewData["Title"] = "Add new animal";
-}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        
+        <div class="col-lg-7 col-md-9">
+            <div class="card shadow border-0" style="border-radius: 15px; overflow: hidden;">
+                
+                <!-- Header بنفس اللون الأزرق والمساحة -->
+                <div class="card-header border-0 text-white text-center py-3" style="background-color: #007bff;">
+                    <h3 class="fw-bold mb-1">Add New Animal</h3>
+                    <p class="mb-0 opacity-75 small">Please fill in the details below to list your pet</p>
+                </div>
 
-<h2>Add new animal</h2>
+                
+                <div class="card-body p-4">
+                    <form asp-action="Add" method="post" enctype="multipart/form-data">
+                        
+                        <div class="row mb-3">
+                            <!-- Pet Name -->
+                            <div class="col-md-6">
+                                <label asp-for="Name" class="form-label fw-bold small">Pet Name</label>
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-light border-end-0" style="width: 35px;"></span>
+                                    <input asp-for="Name" class="form-control border-start-0" placeholder="e.g. Fluffy" />
+                                </div>
+                            </div>
 
-<div class="row">
-    <div class="col-md-6">
-        <form asp-action="Add" method="post" enctype="multipart/form-data">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                            <!-- Animal Type -->
+                            <div class="col-md-6">
+                                <label asp-for="Type" class="form-label fw-bold small">Animal Type</label>
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-light border-end-0" style="width: 35px;"></span>
+                                    <input asp-for="Type" class="form-control border-start-0" placeholder="e.g. Cat, Dog..." />
+                                </div>
+                            </div>
+                        </div>
 
-            <div class="form-group mb-3">
-                <label asp-for="Name">Name</label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
+                        <!-- Age (Years) -->
+                        <div class="mb-3">
+                            <label asp-for="Age" class="form-label fw-bold small">Age (Years)</label>
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-light border-end-0" style="width: 35px;"></span>
+                                <input asp-for="Age" class="form-control border-start-0" type="number" value="0" />
+                            </div>
+                        </div>
+
+                        <!-- Health Status & Description -->
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label fw-bold small">Health Status & Description</label>
+                            <textarea asp-for="Description" class="form-control" rows="3" placeholder="Tell us about the pet's health and personality..."></textarea>
+                        </div>
+
+                        <!-- Pet Photo -->
+                        <div class="mb-3">
+                            <label asp-for="ImageFile" class="form-label fw-bold small">Pet Photo</label>
+                            <div class="input-group input-group-sm">
+                                <label class="input-group-text bg-light" for="inputGroupFile01">Choose File</label>
+                                <input asp-for="ImageFile" type="file" class="form-control" id="inputGroupFile01" accept="image/*">
+                            </div>
+                            <small class="text-muted" style="font-size: 0.75rem;">Choose a clear photo of the animal.</small>
+                        </div>
+
+                        <hr class="my-4 opacity-25">
+
+                        <!-- الأزرار بنفس توزيع وألوان الصورة -->
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-outline-secondary btn-sm px-4 py-2" style="border-radius: 6px; color: #6c757d;">Back to Gallery</a>
+                            <button type="submit" class="btn btn-primary btn-sm px-5 py-2 fw-bold" style="background-color: #0d6efd; border-radius: 6px;">Add Pet</button>
+                        </div>
+                    </form>
+                </div>
             </div>
-
-            <div class="form-group mb-3">
-                <label asp-for="Description">Description</label>
-                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
-
-            <div class="form-group mb-3">
-                <label asp-for="Age">Age</label>
-                <input asp-for="Age" class="form-control" type="number" />
-                <span asp-validation-for="Age" class="text-danger"></span>
-            </div>
-
-            <div class="form-group mb-3">
-                <label asp-for="ImageFile">Image</label>
-                <input asp-for="ImageFile" class="form-control" type="file" accept="image/*" />
-                <span asp-validation-for="ImageFile" class="text-danger"></span>
-            </div>
-
-            <button type="submit" class="btn btn-primary">Add</button>
-            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
-        </form>
+        </div>
     </div>
 </div>
-
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-}
