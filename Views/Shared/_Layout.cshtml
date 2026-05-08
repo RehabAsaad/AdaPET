@@ -27,9 +27,13 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Animals" asp-action="Index">Show Animals</a>
-                        </li>
+                        @* بنشيك لو إحنا مش في صفحة الـ Account (التي تحتوي على Login و Register) *@
+                        @if (ViewContext.RouteData.Values["controller"]?.ToString() != "Account")
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Animals" asp-action="Index">Show Animals</a>
+                            </li>
+                        }
 
                         <!-- Doctors & Clinics Button - Shows for ALL authenticated users -->
                         @if (User.Identity.IsAuthenticated)

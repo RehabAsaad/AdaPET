@@ -15,10 +15,18 @@ namespace AdaPET.Controllers
         }
 
         // show all animals
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchType)
         {
-            var animalsList = await _context.Animals.ToListAsync();
-            return View(animalsList);
+            
+            var animals = from a in _context.Animals
+                          select a;
+
+            if (!string.IsNullOrEmpty(searchType))
+            {
+                animals = animals.Where(s => s.Type.Contains(searchType));
+            }
+
+            return View(await animals.ToListAsync());
         }
 
         // Add animal 
