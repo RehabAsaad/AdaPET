@@ -35,10 +35,14 @@ namespace AdaPET.Controllers
                     await SignInUser(result.User, false);
                     HttpContext.Session.SetInt32("UserId", result.User.Id);
                     TempData["Success"] = "SignIn Success!";
-                    return RedirectToAction("Index", "Animals");
+                    // return RedirectToAction("Index", "Animals");
+                    return RedirectToAction("Login", "Account");
                 }
 
-                ModelState.AddModelError("", result.ErrorMessage);
+                foreach (var error in result.Errors)
+                    {
+                    ModelState.AddModelError("", error);
+                }
                 return View(model);
             }
 
@@ -65,9 +69,9 @@ namespace AdaPET.Controllers
             if (result.Success && result.User != null)
             {
                 await SignInUser(result.User, model.RememberMe);
-                HttpContext.Session.SetInt32("UserId", result.User.Id);
+                HttpContext.Session?.SetInt32("UserId", result.User.Id);
 
-                TempData["Success"] = "SignUp success!";
+                TempData["Success"] = "Welcome back! You have successfully logged in.";
 
                 if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
                 {
@@ -77,7 +81,22 @@ namespace AdaPET.Controllers
                 return RedirectToAction("Index", "Animals");
             }
 
-            ModelState.AddModelError("", result.ErrorMessage);
+            // ✅ إضافة رسائل خطأ محددة لكل حالة
+            if (result.ErrorMessage.Contains("Email not found"))
+            {
+                ModelState.AddModelError("Email", result.ErrorMessage);
+                ModelState.AddModelError("", "Email not registered. Would you like to create an account?");
+            }
+            else if (result.ErrorMessage.Contains("Incorrect password"))
+            {
+                ModelState.AddModelError("Password", result.ErrorMessage);
+                ModelState.AddModelError("", "Incorrect password. Please try again.");
+            }
+            else
+            {
+                ModelState.AddModelError("", result.ErrorMessage ?? "Invalid email or password");
+            }
+
             return View(model);
         }
 
