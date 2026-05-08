@@ -11,28 +11,35 @@
                 <h4>Login</h4>
             </div>
             <div class="card-body">
-                <form asp-action="Login" method="post">
+                <form asp-action="Login" method="post" id="loginForm">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
                     <div class="form-group mb-3">
                         <label asp-for="Email">Email</label>
-                        <input asp-for="Email" class="form-control" dir="ltr" />
+                        <input asp-for="Email" class="form-control" dir="ltr" id="Email" />
                         <span asp-validation-for="Email" class="text-danger"></span>
                     </div>
 
                     <div class="form-group mb-3">
                         <label asp-for="Password">Password</label>
-                        <input asp-for="Password" class="form-control" type="password" />
+                        <input asp-for="Password" class="form-control" type="password" id="Password" />
                         <span asp-validation-for="Password" class="text-danger"></span>
                     </div>
 
                     <div class="form-group mb-3 form-check">
-                        <input asp-for="RememberMe" class="form-check-input" />
-                        <label asp-for="RememberMe" class="form-check-label">Remember Me </label>
+                        <input asp-for="RememberMe" class="form-check-input" id="RememberMe" />
+                        <label asp-for="RememberMe" class="form-check-label">Remember Me</label>
                     </div>
 
-                    <button type="submit" class="btn btn-primary">submit</button>
+                    <button type="submit" class="btn btn-primary">Submit</button>
                     <a asp-action="Register" class="btn btn-secondary">Register</a>
+                    
+                    <div class="text-center mt-3" id="registerSuggestion" style="display: none;">
+                        <hr />
+                        <p class="text-muted small">
+                            Don't have an account? <a asp-action="Register" class="text-primary">Click here to create one</a>
+                        </p>
+                    </div>
                 </form>
             </div>
         </div>
@@ -43,4 +50,73 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    
+    <script>
+        $(document).ready(function () {
+            window.validateLoginForm = function () {
+                let isValid = true;
+                
+                var email = $('#Email').val().trim();
+                var emailErrorSpan = $('#Email').siblings('.text-danger');
+                // ✅ استخدم @@ بدلاً من
+                var emailRegex = /^[a-zA-Z0-9._%+-]+@@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                
+                if (!email) {
+                    emailErrorSpan.text('Email is required');
+                    $('#Email').addClass('input-validation-error');
+                    isValid = false;
+                } else if (!emailRegex.test(email)) {
+                    emailErrorSpan.text('⚠️ Please enter a valid email address');
+                    $('#Email').addClass('input-validation-error');
+                    isValid = false;
+                } else {
+                    emailErrorSpan.text('');
+                    $('#Email').removeClass('input-validation-error');
+                }
+                
+                var password = $('#Password').val();
+                var passwordErrorSpan = $('#Password').siblings('.text-danger');
+                
+                if (!password) {
+                    passwordErrorSpan.text('Password is required');
+                    $('#Password').addClass('input-validation-error');
+                    isValid = false;
+                } else if (password.length < 6) {
+                    passwordErrorSpan.text('⚠️ Password must be at least 6 characters');
+                    $('#Password').addClass('input-validation-error');
+                    isValid = false;
+                } else {
+                    passwordErrorSpan.text('');
+                    $('#Password').removeClass('input-validation-error');
+                }
+                
+                return isValid;
+            };
+            
+            function checkEmailError() {
+                var emailError = $('#Email').siblings('.text-danger').text();
+                if (emailError.includes("Email not found") || emailError.includes("not registered")) {
+                    $('#registerSuggestion').slideDown();
+                } else {
+                    $('#registerSuggestion').slideUp();
+                }
+            }
+            
+            $('#Email, #Password').on('blur', function () {
+                window.validateLoginForm();
+                checkEmailError();
+            });
+            
+            $('#loginForm').on('submit', function (e) {
+                if (!window.validateLoginForm()) {
+                    e.preventDefault();
+                    alert("❌ Please fill in all required fields correctly.");
+                    return false;
+                }
+                return true;
+            });
+            
+            checkEmailError();
+        });
+    </script>
 }

@@ -1,4 +1,7 @@
-﻿// دالة التحقق من صحة حقول الدكتور
+﻿// ✅ إزالة $(document).ready الثاني لتجنب التضارب
+// ✅ الاحتفاظ فقط بالدوال
+
+// دالة التحقق من صحة حقول الدكتور
 window.validateDoctorFields = function () {
     let isValid = true;
 
@@ -30,7 +33,7 @@ window.validateDoctorFields = function () {
     let hasValidClinic = false;
     let allClinicsValid = true;
 
-    $('.clinic-row').each(function (index) {
+    $('.clinic-row').each(function () {
         const clinicName = $(this).find('.clinic-name').val().trim();
         const clinicAddress = $(this).find('.clinic-address').val().trim();
         const nameErrorSpan = $(this).find('.clinic-name-error');
@@ -89,6 +92,9 @@ window.validateDoctorFields = function () {
     if (!hasValidClinic && $('.clinic-row').length > 0) {
         $('#clinicsGlobalError').text('At least one complete clinic is required (both name and address)');
         isValid = false;
+    } else if ($('.clinic-row').length === 0) {
+        $('#clinicsGlobalError').text('Please add at least one clinic');
+        isValid = false;
     } else {
         $('#clinicsGlobalError').text('');
     }
@@ -100,25 +106,22 @@ window.validateDoctorFields = function () {
     return isValid;
 };
 
-// إضافة أحداث الـ validation الفورية
-$(document).ready(function () {
-    // Validation فوري للدكتور عند الخروج من الحقول
-    $(document).on('blur', '#Specialization', function () {
-        if ($('#roleSelect').val() === 'Doctor') {
-            window.validateDoctorFields();
-        }
-    });
+// إضافة أحداث الـ validation الفورية (بدون document ready جديد)
+$(document).on('blur', '#Specialization', function () {
+    if ($('#roleSelect').val() === 'Doctor') {
+        window.validateDoctorFields();
+    }
+});
 
-    $(document).on('blur', '.clinic-name, .clinic-address', function () {
-        if ($('#roleSelect').val() === 'Doctor') {
-            window.validateDoctorFields();
-        }
-    });
+$(document).on('blur', '.clinic-name, .clinic-address', function () {
+    if ($('#roleSelect').val() === 'Doctor') {
+        window.validateDoctorFields();
+    }
+});
 
-    // Validation فوري أثناء الكتابة
-    $(document).on('input', '#Specialization, .clinic-name, .clinic-address', function () {
-        if ($('#roleSelect').val() === 'Doctor') {
-            window.validateDoctorFields();
-        }
-    });
+// Validation فوري أثناء الكتابة
+$(document).on('input', '#Specialization, .clinic-name, .clinic-address', function () {
+    if ($('#roleSelect').val() === 'Doctor') {
+        window.validateDoctorFields();
+    }
 });
