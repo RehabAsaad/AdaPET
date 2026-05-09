@@ -1,49 +1,159 @@
 ﻿@model AdaPET.Models.Clinic
 
 @{
-    ViewData["Title"] = "Edit Clinic";
+    ViewData["Title"] = $"Edit Clinic - {Model.Name}";
 }
 
-<h2>Edit Clinic Information</h2>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header bg-warning text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-edit"></i> Edit Clinic: @Model.Name
+                    </h3>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
 
-<div class="row">
-    <div class="col-md-6">
-        <form asp-action="EditClinic">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <input type="hidden" asp-for="DoctorId" />
+                    <form asp-action="EditClinic" method="post">
+                        @Html.AntiForgeryToken()
 
-            <div class="form-group mb-3">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="DoctorId" />
+
+                        <!-- Basic Information Section -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Basic Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label asp-for="Name" class="form-label fw-bold">Clinic Name</label>
+                                    <input asp-for="Name" class="form-control" required />
+                                    <span asp-validation-for="Name" class="text-danger"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="location" class="form-label fw-bold">Location</label>
+                                    <input asp-for="location" class="form-control" required />
+                                    <span asp-validation-for="location" class="text-danger"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Phone" class="form-label fw-bold">Phone Number</label>
+                                    <input asp-for="Phone" class="form-control" required />
+                                    <span asp-validation-for="Phone" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Description Section -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0"><i class="fas fa-align-left"></i> Clinic Description</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label asp-for="Description" class="form-label fw-bold">Description</label>
+                                    <textarea asp-for="Description" class="form-control" rows="4"
+                                              placeholder="Describe your clinic, services offered, facilities, etc..."></textarea>
+                                    <small class="text-muted">Tell patients about your clinic, services, and what makes it special.</small>
+                                    <span asp-validation-for="Description" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Schedule Section -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0"><i class="fas fa-calendar-alt"></i> Working Hours & Schedule</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label asp-for="Schedule" class="form-label fw-bold">Schedule / Working Hours</label>
+                                    <textarea asp-for="Schedule" class="form-control" rows="10"
+                                              placeholder="Example:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📅 WORKING HOURS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Monday     : 9:00 AM - 5:00 PM
+Tuesday    : 9:00 AM - 5:00 PM
+Wednesday  : 9:00 AM - 5:00 PM
+Thursday   : 9:00 AM - 5:00 PM
+Friday     : 9:00 AM - 1:00 PM
+Saturday   : Closed
+Sunday     : Closed
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🍽️ LUNCH BREAK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1:00 PM - 2:00 PM
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📞 APPOINTMENT INFO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Call to schedule appointments
+Emergency cases welcome
+Walk-ins available during working hours"></textarea>
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle"></i>
+                                        Enter your clinic's working hours. You can use any format. Use the example above as a template.
+                                    </small>
+                                    <span asp-validation-for="Schedule" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-lightbulb"></i>
+                            <strong>Tips for a good schedule:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Include daily working hours</li>
+                                <li>Mention lunch/closing breaks</li>
+                                <li>Add appointment requirements</li>
+                                <li>Include emergency contact info</li>
+                                <li>List holiday closures if any</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-
-            <div class="form-group mb-3">
-                <label asp-for="Description" class="control-label"></label>
-                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
-
-            <div class="form-group mb-3">
-                <label asp-for="location" class="control-label">Location</label>
-                <input asp-for="location" class="form-control" />
-                <span asp-validation-for="location" class="text-danger"></span>
-            </div>
-
-            <div class="form-group mb-3">
-                <label asp-for="Phone" class="control-label"></label>
-                <input asp-for="Phone" class="form-control" />
-                <span asp-validation-for="Phone" class="text-danger"></span>
-            </div>
-
-            <div class="form-group">
-                <button type="submit" class="btn btn-primary">Save Changes</button>
-                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
-            </div>
-        </form>
+        </div>
     </div>
 </div>
+
+<style>
+    textarea {
+        font-family: monospace;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    .card {
+        transition: transform 0.2s;
+    }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+</style>
 
 @section Scripts {
     @{

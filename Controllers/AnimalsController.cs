@@ -14,13 +14,23 @@ namespace AdaPET.Controllers
             _context = context;
         }
 
+<<<<<<< HEAD
+        // GET: Animals - show all animals with search
+=======
         // الجاليري + البحث
+>>>>>>> 41f7c55ab5100c221debfba32cd5cecfd2c8f59d
         public async Task<IActionResult> Index(string searchType)
         {
             var animals = from a in _context.Animals select a;
             if (!string.IsNullOrEmpty(searchType))
             {
                 animals = animals.Where(s => s.Type.Contains(searchType));
+                ViewBag.CurrentFilter = searchType;
+                ViewBag.SearchPerformed = true;
+            }
+            else
+            {
+                ViewBag.SearchPerformed = false;
             }
             return View(await animals.ToListAsync());
         }
@@ -90,6 +100,10 @@ namespace AdaPET.Controllers
             return View(animal);
         }
 
+<<<<<<< HEAD
+        // POST: Animals/ToggleAdoption/5 - Redirects to Details page
+=======
+>>>>>>> 41f7c55ab5100c221debfba32cd5cecfd2c8f59d
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Animal animal)
@@ -124,6 +138,25 @@ namespace AdaPET.Controllers
                     if (!AnimalExists(animal.ID)) return NotFound();
                     throw;
                 }
+<<<<<<< HEAD
+                else
+                {
+                    animal.AdoptedDate = null;
+                }
+
+                _context.Update(animal);
+                await _context.SaveChangesAsync();
+
+                string status = animal.IsAdopted ? "adopted" : "marked as available for adoption";
+                TempData["Success"] = $"{animal.Name} has been {status}!";
+
+                return RedirectToAction(nameof(Details), new { id = animal.ID });
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error updating adoption status: {ex.Message}";
+=======
+>>>>>>> 41f7c55ab5100c221debfba32cd5cecfd2c8f59d
                 return RedirectToAction(nameof(Index));
             }
             return View(animal);

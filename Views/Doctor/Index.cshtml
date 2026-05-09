@@ -38,17 +38,35 @@
                                         <div class="card-body">
                                             <h6 class="card-title">@clinic.Name</h6>
                                             <p class="card-text">
-                                                <strong>Description:</strong> @(clinic.Description ?? "N/A")<br />
-                                                <strong>Location:</strong> @clinic.Location<br />
-                                                <strong>Phone:</strong> @clinic.Phone
+                                                <strong>📍 Location:</strong> @clinic.Location<br />
+                                                <strong>📞 Phone:</strong> @clinic.Phone
                                             </p>
+
+                                            @if (!string.IsNullOrEmpty(clinic.Description))
+                                            {
+                                                <div class="alert alert-light mt-2">
+                                                    <strong><i class="fas fa-align-left"></i> Description:</strong>
+                                                    <p class="mb-0 mt-1">@clinic.Description</p>
+                                                </div>
+                                            }
+
+                                            @if (!string.IsNullOrEmpty(clinic.Schedule))
+                                            {
+                                                <div class="alert alert-info mt-2">
+                                                    <strong><i class="fas fa-calendar-alt"></i> Working Hours:</strong>
+                                                    <pre style="white-space: pre-wrap; margin-top: 8px; font-size: 13px; background: #f8f9fa; border-radius: 5px; padding: 8px;">@clinic.Schedule</pre>
+                                                </div>
+                                            }
+
                                             @if (clinic.CanEdit)
                                             {
-                                                <a asp-action="EditClinic"
-                                                   asp-route-id="@clinic.ClinicId"
-                                                   class="btn btn-warning btn-sm">
-                                                    ✏️ Edit Clinic
-                                                </a>
+                                                <div class="mt-2">
+                                                    <a asp-action="EditClinic"
+                                                       asp-route-id="@clinic.ClinicId"
+                                                       class="btn btn-warning btn-sm">
+                                                        <i class="fas fa-edit"></i> Edit Clinic
+                                                    </a>
+                                                </div>
                                             }
                                         </div>
                                     </div>
@@ -78,6 +96,14 @@
     </div>
 }
 
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
 <style>
     .card-header {
         margin-bottom: 0;
@@ -99,5 +125,11 @@
 
     .btn-light:hover {
         transform: scale(1.02);
+    }
+
+    pre {
+        font-family: monospace;
+        font-size: 13px;
+        margin: 0;
     }
 </style>

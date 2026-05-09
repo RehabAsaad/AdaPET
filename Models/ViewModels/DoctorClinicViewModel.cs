@@ -15,6 +15,7 @@
         public string Description { get; set; }
         public string Location { get; set; }
         public string Phone { get; set; }
+        public string? Schedule { get; set; }  // ✅ ADD THIS LINE
         public bool CanEdit { get; set; }
     }
 
