@@ -3,18 +3,21 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AdaPET.Models
 {
-	public class Clinic
-	{
-		[Key]
-		public int Id { get; set; }
-		public string Name { get; set; }
-		public string? Description { get; set; }
-		public string location { get; set; }
-		public string Phone { get; set; }
-      
+    public class Clinic
+    {
+        [Key]
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public string location { get; set; } = string.Empty;
+        public string Phone { get; set; } = string.Empty;
+
         public int DoctorId { get; set; }
-		[ForeignKey("DoctorId")]
-        public Doctor Doctor { get; set; }
-       // public ICollection<Doctor> Doctors { get; set; }
-	}
+
+        [ForeignKey("DoctorId")]
+        public Doctor Doctor { get; set; } = null!;
+
+        // ✅ ONLY ADD THIS ONE LINE
+        public string? Schedule { get; set; }
+    }
 }

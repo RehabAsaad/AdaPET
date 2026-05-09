@@ -44,6 +44,7 @@ namespace AdaPET.Controllers
                         Description = c.Description,
                         Location = c.location,
                         Phone = c.Phone,
+                        Schedule = c.Schedule,  // ✅ ADD THIS LINE
                         CanEdit = currentUserRole == "Doctor" && currentUserId == d.UserId.ToString()
                     }).ToList()
                 })
@@ -67,14 +68,22 @@ namespace AdaPET.Controllers
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (clinic == null)
-                return NotFound();
+            {
+                TempData["Error"] = "Clinic not found.";
+                return RedirectToAction(nameof(Index));
+            }
 
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(currentUserId) || !int.TryParse(currentUserId, out int userId))
+            {
                 return Unauthorized();
+            }
 
             if (clinic.DoctorId != userId)
-                return Forbid();
+            {
+                TempData["Error"] = "You can only edit your own clinics.";
+                return RedirectToAction(nameof(Index));
+            }
 
             return View(clinic);
         }
@@ -82,32 +91,45 @@ namespace AdaPET.Controllers
         [HttpPost]
         [Authorize(Roles = "Doctor")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditClinic(int id, Clinic clinic)
+        public async Task<IActionResult> EditClinic(int id, [Bind("Id,Name,Description,location,Phone,Schedule")] Clinic clinic)
         {
             if (id != clinic.Id)
+            {
                 return NotFound();
+            }
 
             var existingClinic = await _context.Clinics
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (existingClinic == null)
-                return NotFound();
+            {
+                TempData["Error"] = "Clinic not found.";
+                return RedirectToAction(nameof(Index));
+            }
 
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(currentUserId) || !int.TryParse(currentUserId, out int userId))
+            {
                 return Unauthorized();
+            }
 
             if (existingClinic.DoctorId != userId)
-                return Forbid();
+            {
+                TempData["Error"] = "You can only edit your own clinics.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            ModelState.Remove("Doctor");
 
             if (ModelState.IsValid)
             {
                 try
                 {
                     existingClinic.Name = clinic.Name;
-                    existingClinic.Description = clinic.Description;
+                    existingClinic.Description = clinic.Description ?? string.Empty;
                     existingClinic.location = clinic.location;
                     existingClinic.Phone = clinic.Phone;
+                    existingClinic.Schedule = clinic.Schedule;  // ✅ ADD THIS LINE
 
                     await _context.SaveChangesAsync();
                     TempData["SuccessMessage"] = "Clinic information updated successfully!";
@@ -119,7 +141,13 @@ namespace AdaPET.Controllers
                         return NotFound();
                     throw;
                 }
+                catch (Exception ex)
+                {
+                    TempData["Error"] = $"Error saving changes: {ex.Message}";
+                    return View(clinic);
+                }
             }
+
             return View(clinic);
         }
 
@@ -127,7 +155,5 @@ namespace AdaPET.Controllers
         {
             return _context.Clinics.Any(e => e.Id == id);
         }
-
-
     }
 }
