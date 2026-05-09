@@ -1,0 +1,105 @@
+﻿@model AdaPET.Models.Animal
+
+@{
+    ViewData["Title"] = $"Edit {Model.Name}";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7 col-md-9">
+            <div class="card shadow border-0" style="border-radius: 15px; overflow: hidden;">
+
+                <div class="card-header border-0 text-white text-center py-3" style="background-color: #ffc107;">
+                    <h3 class="fw-bold mb-1">Edit Animal</h3>
+                    <p class="mb-0 opacity-75 small">Update your pet's information</p>
+                </div>
+
+                <div class="card-body p-4">
+                    <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden" asp-for="ID" />
+                        <input type="hidden" asp-for="OwnerId" />
+                        <input type="hidden" asp-for="ImgURL" />
+                        <input type="hidden" asp-for="IsAdopted" />
+                        <input type="hidden" asp-for="AdoptedDate" />
+
+                        @if (!string.IsNullOrEmpty(Model.ImgURL))
+                        {
+                            <div class="text-center mb-3">
+                                <img src="@Model.ImgURL" class="rounded" style="max-height: 150px; max-width: 100%;" />
+                                <p class="small text-muted mt-1">Current photo</p>
+                            </div>
+                        }
+
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label fw-bold">Pet Name *</label>
+                            <input asp-for="Name" class="form-control" required />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Type" class="form-label fw-bold">Animal Type *</label>
+                            <!-- ComboBox: Choose from list OR write custom value -->
+                            <input list="animalTypes" asp-for="Type" class="form-control" placeholder="Select or type animal type" required />
+                            <datalist id="animalTypes">
+                                <option value="Dog">🐕 Dog</option>
+                                <option value="Cat">🐈 Cat</option>
+                                <option value="Bird">🐦 Bird</option>
+                                <option value="Rabbit">🐇 Rabbit</option>
+                                <option value="Fish">🐟 Fish</option>
+                                <option value="Hamster">🐹 Hamster</option>
+                                <option value="Guinea Pig">🐹 Guinea Pig</option>
+                                <option value="Horse">🐎 Horse</option>
+                                <option value="Cow">🐄 Cow</option>
+                                <option value="Sheep">🐑 Sheep</option>
+                                <option value="Goat">🐐 Goat</option>
+                                <option value="Chicken">🐔 Chicken</option>
+                                <option value="Duck">🦆 Duck</option>
+                                <option value="Turtle">🐢 Turtle</option>
+                                <option value="Snake">🐍 Snake</option>
+                                <option value="Lizard">🦎 Lizard</option>
+                                <option value="Frog">🐸 Frog</option>
+                                <option value="Mouse">🐭 Mouse</option>
+                                <option value="Rat">🐀 Rat</option>
+                                <option value="Ferret">🐾 Ferret</option>
+                                <option value="Parrot">🦜 Parrot</option>
+                                <option value="Other">🐾 Other</option>
+                            </datalist>
+                            <small class="text-muted">Select from list or type your own animal type</small>
+                            <span asp-validation-for="Type" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Age" class="form-label fw-bold">Age (Years) *</label>
+                            <input asp-for="Age" class="form-control" type="number" min="0" step="0.5" required />
+                            <span asp-validation-for="Age" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label fw-bold">Description</label>
+                            <textarea asp-for="Description" class="form-control" rows="3" placeholder="Tell us about your pet's personality, health, etc."></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ImageFile" class="form-label fw-bold">Change Photo (Optional)</label>
+                            <input asp-for="ImageFile" type="file" class="form-control" accept="image/*" />
+                            <small class="text-muted">Leave empty to keep current photo</small>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Details" asp-route-id="@Model.ID" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-warning">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
