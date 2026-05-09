@@ -1,0 +1,182 @@
+﻿@using System.Security.Claims
+@model AdaPET.Models.Animal
+
+@{
+    ViewData["Title"] = $"{Model.Name} - Details";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-paw"></i> @Model.Name
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        @if (!string.IsNullOrEmpty(Model.ImgURL))
+                        {
+                            <div class="col-md-5">
+                                <img src="@Model.ImgURL" class="img-fluid rounded shadow-sm" alt="@Model.Name" style="max-height: 300px; width: 100%; object-fit: cover;" />
+                            </div>
+                            <div class="col-md-7">
+                                <dl class="row">
+                                    <dt class="col-sm-4">Type:</dt>
+                                    <dd class="col-sm-8">
+                                        <span class="badge bg-info">@Model.Type</span>
+                                    </dd>
+
+                                    <dt class="col-sm-4">Age:</dt>
+                                    <dd class="col-sm-8">@Model.Age years</dd>
+
+                                    <dt class="col-sm-4">Description:</dt>
+                                    <dd class="col-sm-8">@Model.Description</dd>
+
+                                    <dt class="col-sm-4">Status:</dt>
+                                    <dd class="col-sm-8">
+                                        @if (Model.IsAdopted)
+                                        {
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-heart"></i> Adopted
+                                            </span>
+                                            if (Model.AdoptedDate.HasValue)
+                                            {
+                                                <br />
+                                                <small class="text-muted">Adopted on: @Model.AdoptedDate.Value.ToString("MMMM dd, yyyy")</small>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-home"></i> Available for Adoption
+                                            </span>
+                                        }
+                                    </dd>
+
+                                    <dt class="col-sm-4">Owner:</dt>
+                                    <dd class="col-sm-8">
+                                        <a asp-controller="UserProfile" asp-action="Details" asp-route-id="@Model.OwnerId" class="text-decoration-none">
+                                            <i class="fas fa-user"></i> @(Model.Owner?.Name ?? "Unknown")
+                                        </a>
+                                    </dd>
+                                </dl>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="col-md-12">
+                                <dl class="row">
+                                    <dt class="col-sm-3">Type:</dt>
+                                    <dd class="col-sm-9">
+                                        <span class="badge bg-info">@Model.Type</span>
+                                    </dd>
+
+                                    <dt class="col-sm-3">Age:</dt>
+                                    <dd class="col-sm-9">@Model.Age years</dd>
+
+                                    <dt class="col-sm-3">Description:</dt>
+                                    <dd class="col-sm-9">@Model.Description</dd>
+
+                                    <dt class="col-sm-3">Status:</dt>
+                                    <dd class="col-sm-9">
+                                        @if (Model.IsAdopted)
+                                        {
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-heart"></i> Adopted
+                                            </span>
+                                            if (Model.AdoptedDate.HasValue)
+                                            {
+                                                <br />
+                                                <small class="text-muted">Adopted on: @Model.AdoptedDate.Value.ToString("MMMM dd, yyyy")</small>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-home"></i> Available for Adoption
+                                            </span>
+                                        }
+                                    </dd>
+
+                                    <dt class="col-sm-3">Owner:</dt>
+                                    <dd class="col-sm-9">
+                                        <a asp-controller="UserProfile" asp-action="Details" asp-route-id="@Model.OwnerId" class="text-decoration-none">
+                                            <i class="fas fa-user"></i> @(Model.Owner?.Name ?? "Unknown")
+                                        </a>
+                                    </dd>
+                                </dl>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div>
+                            <a asp-controller="UserProfile" asp-action="Details" asp-route-id="@Model.OwnerId" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-arrow-left"></i> Back to Owner Profile
+                            </a>
+                            <a asp-controller="Animals" asp-action="Index" class="btn btn-primary btn-sm">
+                                <i class="fas fa-list"></i> Back to Animals List
+                            </a>
+                        </div>
+
+                        <div>
+                            @{
+                                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                                var ownerId = Model.OwnerId.ToString();
+                            }
+
+                            @if (User.Identity.IsAuthenticated && userId == ownerId)
+                            {
+                                <a asp-action="Edit" asp-route-id="@Model.ID" class="btn btn-warning btn-sm">
+                                    <i class="fas fa-edit"></i> Edit Animal
+                                </a>
+
+                                <form asp-action="ToggleAdoption" asp-route-id="@Model.ID" method="post" style="display: inline-block;">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-info btn-sm"
+                                            onclick="return confirm('Are you sure you want to change the adoption status?');">
+                                        <i class="fas fa-exchange-alt"></i> Toggle Adoption Status
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        transition: transform 0.2s;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+    .btn-sm {
+        margin: 2px;
+    }
+</style>

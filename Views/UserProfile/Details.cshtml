@@ -1,0 +1,220 @@
+﻿@using System.Security.Claims
+@model AdaPET.Models.UserProfileViewModel
+
+@{
+    ViewData["Title"] = $"{Model.Name}'s Profile";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <!-- User Information Card -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header @(Model.UserRole == "Doctor" ? "bg-info" : "bg-primary") text-white">
+                    <h4 class="mb-0">
+                        @if (Model.UserRole == "Doctor")
+                        {
+                            <i class="fas fa-user-md"></i>
+                            <span> Doctor Profile</span>
+                        }
+                        else
+                        {
+                            <i class="fas fa-user"></i>
+                            <span> User Profile</span>
+                        }
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <div class="rounded-circle @(Model.UserRole == "Doctor" ? "bg-info" : "bg-secondary") text-white d-inline-flex align-items-center justify-content-center"
+                             style="width: 100px; height: 100px; font-size: 40px;">
+                            @Model.Name?.Substring(0, 1).ToUpper()
+                        </div>
+                    </div>
+
+                    <dl class="row">
+                        <dt class="col-sm-4">Name:</dt>
+                        <dd class="col-sm-8">@Model.Name</dd>
+
+                        <dt class="col-sm-4">Email:</dt>
+                        <dd class="col-sm-8">@Model.Email</dd>
+
+                        <dt class="col-sm-4">Phone:</dt>
+                        <dd class="col-sm-8">@Model.Phone</dd>
+
+                        <dt class="col-sm-4">Role:</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge @(Model.UserRole == "Doctor" ? "bg-info" : "bg-secondary")">
+                                @Model.UserRole
+                            </span>
+                        </dd>
+
+                        @if (Model.UserRole == "Doctor" && !string.IsNullOrEmpty(Model.Specialization))
+                        {
+                            <dt class="col-sm-4">Specialization:</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge bg-success">@Model.Specialization</span>
+                            </dd>
+                        }
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Animals Card -->
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-paw"></i> My Animals (@Model.Animals.Count)
+                    </h4>
+                    @{
+                        // Get the currently logged-in user ID
+                        var currentUserIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                        int currentUserId = 0;
+                        if (!string.IsNullOrEmpty(currentUserIdString))
+                        {
+                            int.TryParse(currentUserIdString, out currentUserId);
+                        }
+
+                        // Check if the profile being viewed belongs to the logged-in user
+                        bool isOwnProfile = (currentUserId == Model.UserId);
+                    }
+
+                    @* ✅ ONLY show Add button if viewing OWN profile AND user is NOT a doctor *@
+                    @if (isOwnProfile && Model.UserRole != "Doctor")
+                    {
+                        <a asp-controller="Animals" asp-action="Add" class="btn btn-light btn-sm">
+                            <i class="fas fa-plus"></i> Add New Animal
+                        </a>
+                    }
+                </div>
+                <div class="card-body">
+                    @if (Model.Animals.Any())
+                    {
+                        <div class="row">
+                            @foreach (var animal in Model.Animals)
+                            {
+                                <div class="col-md-6 mb-3">
+                                    <div class="card h-100">
+                                        @if (!string.IsNullOrEmpty(animal.ImgURL))
+                                        {
+                                            <img src="@animal.ImgURL" class="card-img-top" alt="@animal.Name"
+                                                 style="height: 200px; object-fit: cover;">
+                                        }
+                                        else
+                                        {
+                                            <div class="bg-light text-center py-5">
+                                                <i class="fas fa-paw fa-3x text-muted"></i>
+                                            </div>
+                                        }
+                                        <div class="card-body">
+                                            <h5 class="card-title text-primary">@animal.Name</h5>
+                                            <hr />
+                                            <dl class="row mb-0">
+                                                <dt class="col-sm-4">Type:</dt>
+                                                <dd class="col-sm-8">@animal.Type</dd>
+
+                                                <dt class="col-sm-4">Age:</dt>
+                                                <dd class="col-sm-8">@animal.Age years</dd>
+
+                                                @if (!string.IsNullOrEmpty(animal.Description))
+                                                {
+                                                    <dt class="col-sm-4">Description:</dt>
+                                                    <dd class="col-sm-8">@animal.Description</dd>
+                                                }
+
+                                                <dt class="col-sm-4">Status:</dt>
+                                                <dd class="col-sm-8">
+                                                    @if (animal.IsAdopted)
+                                                    {
+                                                        <span class="badge bg-danger">Adopted</span>
+                                                        if (animal.AdoptedDate.HasValue)
+                                                        {
+                                                            <br />
+                                                            <small class="text-muted">Adopted: @animal.AdoptedDate.Value.ToString("MMM dd, yyyy")</small>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-success">Available for Adoption</span>
+                                                    }
+                                                </dd>
+                                            </dl>
+                                        </div>
+                                        <div class="card-footer bg-transparent">
+                                            <div class="btn-group w-100" role="group">
+                                                <a asp-controller="Animals" asp-action="Details" asp-route-id="@animal.ID"
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-info-circle"></i> View Details
+                                                </a>
+                                                @if (isOwnProfile)
+                                                {
+                                                    <a asp-controller="Animals" asp-action="Edit" asp-route-id="@animal.ID"
+                                                       class="btn btn-sm btn-outline-warning">
+                                                        <i class="fas fa-edit"></i> Edit
+                                                    </a>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info text-center">
+                            <i class="fas fa-paw fa-3x mb-3"></i>
+                            <h5>No animals registered yet</h5>
+                            @if (isOwnProfile && Model.UserRole != "Doctor")
+                            {
+                                <p>Click the "Add New Animal" button to add your first pet!</p>
+                            }
+                            else if (Model.UserRole == "Doctor")
+                            {
+                                <p>Doctors don't register animals. This is their professional profile.</p>
+                            }
+                            else
+                            {
+                                <p>This user hasn't registered any animals yet.</p>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        transition: transform 0.2s;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+    .rounded-circle {
+        border: 3px solid white;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+</style>

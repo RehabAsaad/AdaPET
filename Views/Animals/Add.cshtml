@@ -1,72 +1,61 @@
 ﻿@model AdaPET.Models.Animal
 
-<div class="container mt-5">
+<div class="container mt-5 mb-5">
     <div class="row justify-content-center">
-        
-        <div class="col-lg-7 col-md-9">
-            <div class="card shadow border-0" style="border-radius: 15px; overflow: hidden;">
+        <div class="col-lg-6 col-md-8">
+            <div class="card shadow-sm border-0" style="border-radius: 15px; overflow: hidden;">
                 
-                <!-- Header بنفس اللون الأزرق والمساحة -->
-                <div class="card-header border-0 text-white text-center py-3" style="background-color: #007bff;">
-                    <h3 class="fw-bold mb-1">Add New Animal</h3>
-                    <p class="mb-0 opacity-75 small">Please fill in the details below to list your pet</p>
+                <div class="card-header border-0 text-white text-center py-4" style="background-color: #007bff;">
+                    <h3 class="fw-bold mb-0">Add New Pet</h3>
+                    <p class="mb-0 opacity-75 small">Fill in the information to list the pet</p>
                 </div>
 
-                
                 <div class="card-body p-4">
+                    <div asp-validation-summary="All" class="text-danger small mb-3"></div>
+
                     <form asp-action="Add" method="post" enctype="multipart/form-data">
                         
-                        <div class="row mb-3">
-                            <!-- Pet Name -->
-                            <div class="col-md-6">
+                        <input type="hidden" asp-for="ImgURL" value="temp" />
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
                                 <label asp-for="Name" class="form-label fw-bold small">Pet Name</label>
-                                <div class="input-group input-group-sm">
-                                    <span class="input-group-text bg-light border-end-0" style="width: 35px;"></span>
-                                    <input asp-for="Name" class="form-control border-start-0" placeholder="e.g. Fluffy" />
-                                </div>
+                                <input asp-for="Name" class="form-control" placeholder="e.g. Leo" />
+                                <span asp-validation-for="Name" class="text-danger small"></span>
                             </div>
 
-                            <!-- Animal Type -->
-                            <div class="col-md-6">
+                            <div class="col-md-6 mb-3">
                                 <label asp-for="Type" class="form-label fw-bold small">Animal Type</label>
-                                <div class="input-group input-group-sm">
-                                    <span class="input-group-text bg-light border-end-0" style="width: 35px;"></span>
-                                    <input asp-for="Type" class="form-control border-start-0" placeholder="e.g. Cat, Dog..." />
-                                </div>
+                                <input asp-for="Type" class="form-control" placeholder="e.g. Dog" />
+                                <span asp-validation-for="Type" class="text-danger small"></span>
                             </div>
                         </div>
 
-                        <!-- Age (Years) -->
                         <div class="mb-3">
-                            <label asp-for="Age" class="form-label fw-bold small">Age (Years)</label>
-                            <div class="input-group input-group-sm">
-                                <span class="input-group-text bg-light border-end-0" style="width: 35px;"></span>
-                                <input asp-for="Age" class="form-control border-start-0" type="number" value="0" />
-                            </div>
+                            <label asp-for="Age" class="form-label fw-bold small">Age (In Years)</label>
+                            <input asp-for="Age" class="form-control" type="number" min="0" />
+                            <span asp-validation-for="Age" class="text-danger small"></span>
                         </div>
 
-                        <!-- Health Status & Description -->
                         <div class="mb-3">
-                            <label asp-for="Description" class="form-label fw-bold small">Health Status & Description</label>
-                            <textarea asp-for="Description" class="form-control" rows="3" placeholder="Tell us about the pet's health and personality..."></textarea>
+                            <label asp-for="Description" class="form-label fw-bold small">Health & Personality</label>
+                            <textarea asp-for="Description" class="form-control" rows="3" placeholder="Description about the pet..."></textarea>
+                            <span asp-validation-for="Description" class="text-danger small"></span>
                         </div>
 
-                        <!-- Pet Photo -->
-                        <div class="mb-3">
+                        <div class="mb-4">
                             <label asp-for="ImageFile" class="form-label fw-bold small">Pet Photo</label>
-                            <div class="input-group input-group-sm">
-                                <label class="input-group-text bg-light" for="inputGroupFile01">Choose File</label>
-                                <input asp-for="ImageFile" type="file" class="form-control" id="inputGroupFile01" accept="image/*">
-                            </div>
-                            <small class="text-muted" style="font-size: 0.75rem;">Choose a clear photo of the animal.</small>
+                            <input asp-for="ImageFile" type="file" class="form-control" accept="image/*" />
+                            <span asp-validation-for="ImageFile" class="text-danger small"></span>
                         </div>
 
-                        <hr class="my-4 opacity-25">
-
-                        <!-- الأزرار بنفس توزيع وألوان الصورة -->
-                        <div class="d-flex justify-content-between">
-                            <a asp-action="Index" class="btn btn-outline-secondary btn-sm px-4 py-2" style="border-radius: 6px; color: #6c757d;">Back to Gallery</a>
-                            <button type="submit" class="btn btn-primary btn-sm px-5 py-2 fw-bold" style="background-color: #0d6efd; border-radius: 6px;">Add Pet</button>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary w-100 py-2 fw-bold" style="border-radius: 8px;">
+                                Add Pet
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary w-50 py-2" style="border-radius: 8px;">
+                                Cancel
+                            </a>
                         </div>
                     </form>
                 </div>
@@ -74,3 +63,9 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
