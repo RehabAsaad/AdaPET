@@ -14,8 +14,19 @@
                 <div class="col-md-6 mb-4">
                     <div class="card h-100">
                         <div class="card-header bg-primary text-white">
-                            <h4>Dr. @doctor.DoctorName</h4>
-                            <h6>Specialization: @doctor.Specialization</h6>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h4>Dr. @doctor.DoctorName</h4>
+                                    <h6>Specialization: @doctor.Specialization</h6>
+                                </div>
+                                <!-- ✅ VIEW PROFILE BUTTON ADDED HERE -->
+                                <a asp-controller="UserProfile"
+                                   asp-action="Details"
+                                   asp-route-id="@doctor.DoctorId"
+                                   class="btn btn-light btn-sm">
+                                    <i class="fas fa-user-circle"></i> View Profile
+                                </a>
+                            </div>
                         </div>
                         <div class="card-body">
                             @if (doctor.Clinics.Any())
@@ -33,8 +44,8 @@
                                             </p>
                                             @if (clinic.CanEdit)
                                             {
-                                                <a asp-action="EditClinic" 
-                                                   asp-route-id="@clinic.ClinicId" 
+                                                <a asp-action="EditClinic"
+                                                   asp-route-id="@clinic.ClinicId"
                                                    class="btn btn-warning btn-sm">
                                                     ✏️ Edit Clinic
                                                 </a>
@@ -71,15 +82,22 @@
     .card-header {
         margin-bottom: 0;
     }
+
     .card {
         transition: transform 0.2s;
     }
-    .card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
     .btn-warning:hover {
         background-color: #ffc107;
+        transform: scale(1.02);
+    }
+
+    .btn-light:hover {
         transform: scale(1.02);
     }
 </style>

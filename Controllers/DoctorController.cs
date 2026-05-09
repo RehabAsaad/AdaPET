@@ -127,5 +127,7 @@ namespace AdaPET.Controllers
         {
             return _context.Clinics.Any(e => e.Id == id);
         }
+
+
     }
 }

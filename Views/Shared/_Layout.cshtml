@@ -1,6 +1,4 @@
-﻿
-
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -9,6 +7,8 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/AdaPET.styles.css" asp-append-version="true" />
+    <!-- Add FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 </head>
 <body>
     <header>
@@ -82,6 +82,14 @@
                                         </span>
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
+
+                                    <!-- My Profile Link -->
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="UserProfile" asp-action="MyProfile">
+                                            <i class="fas fa-user-circle"></i> My Profile
+                                        </a>
+                                    </li>
+
                                     <li>
                                         <a class="dropdown-item text-danger" asp-controller="Account" asp-action="Logout">
                                             🚪 Logout
@@ -143,6 +151,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
+    <!-- ✅ SCRIPTS SECTION - Only appears ONCE here -->
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
