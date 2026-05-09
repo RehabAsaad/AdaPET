@@ -4,6 +4,7 @@ using AdaPET.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AdaPET.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260509125845_AddValidationnullable")]
+    partial class AddValidationnullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -29,9 +32,6 @@ namespace AdaPET.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
-
-                    b.Property<DateTime?>("AdoptedDate")
-                        .HasColumnType("datetime2");
 
                     b.Property<int>("Age")
                         .HasColumnType("int");
@@ -51,7 +51,7 @@ namespace AdaPET.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<int>("OwnerId")
+                    b.Property<int?>("OwnerId")
                         .HasColumnType("int");
 
                     b.Property<string>("Type")
@@ -85,9 +85,6 @@ namespace AdaPET.Migrations
 
                     b.Property<string>("Phone")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Schedule")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("location")
@@ -140,10 +137,6 @@ namespace AdaPET.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("PhotoURL")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("UserRole")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -161,9 +154,7 @@ namespace AdaPET.Migrations
                 {
                     b.HasOne("AdaPET.Models.User", "Owner")
                         .WithMany("Animals")
-                        .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("OwnerId");
 
                     b.Navigation("Owner");
                 });
