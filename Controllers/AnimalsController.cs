@@ -14,7 +14,7 @@ namespace AdaPET.Controllers
             _context = context;
         }
 
-        // GET: Animals - show all animals
+        // GET: Animals - show all animals with search
         public async Task<IActionResult> Index(string searchType)
         {
             var animals = from a in _context.Animals
@@ -23,6 +23,12 @@ namespace AdaPET.Controllers
             if (!string.IsNullOrEmpty(searchType))
             {
                 animals = animals.Where(s => s.Type.Contains(searchType));
+                ViewBag.CurrentFilter = searchType;
+                ViewBag.SearchPerformed = true;
+            }
+            else
+            {
+                ViewBag.SearchPerformed = false;
             }
 
             return View(await animals.ToListAsync());
@@ -275,7 +281,7 @@ namespace AdaPET.Controllers
             return RedirectToAction("Index");
         }
 
-        // ✅ FIXED: POST: Animals/ToggleAdoption/5 - Now redirects to Details page
+        // POST: Animals/ToggleAdoption/5 - Redirects to Details page
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ToggleAdoption(int id)
@@ -306,7 +312,6 @@ namespace AdaPET.Controllers
                 string status = animal.IsAdopted ? "adopted" : "marked as available for adoption";
                 TempData["Success"] = $"{animal.Name} has been {status}!";
 
-                // ✅ FIX: Redirect back to Details page instead of Index
                 return RedirectToAction(nameof(Details), new { id = animal.ID });
             }
             catch (Exception ex)
