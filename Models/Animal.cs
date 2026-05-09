@@ -31,9 +31,12 @@ namespace AdaPET.Models
         public int OwnerId { get; set; }
         public User? Owner { get; set; }
 
+
         [NotMapped]
         [Required(ErrorMessage = "Please upload an image for the pet")]
         [Display(Name = "Upload Image")]
         public IFormFile ImageFile { get; set; }
+
+        public DateTime? AdoptedDate { get; set; }
     }
 }

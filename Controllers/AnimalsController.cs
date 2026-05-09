@@ -14,161 +14,23 @@ namespace AdaPET.Controllers
             _context = context;
         }
 
-        // GET: Animals - show all animals
+        // GET: Animals
         public async Task<IActionResult> Index(string searchType)
         {
-            var animals = from a in _context.Animals
-                          select a;
-
+            var animals = from a in _context.Animals select a;
             if (!string.IsNullOrEmpty(searchType))
             {
                 animals = animals.Where(s => s.Type.Contains(searchType));
             }
-
             return View(await animals.ToListAsync());
         }
 
         // GET: Animals/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var animal = await _context.Animals
-                .Include(a => a.Owner)
-                .FirstOrDefaultAsync(a => a.ID == id);
-
-            if (animal == null)
-            {
-                return NotFound();
-            }
-
-            return View(animal);
-        }
-
-        // GET: Animals/Edit/5
-        [HttpGet]
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var animal = await _context.Animals
-                .Include(a => a.Owner)
-                .FirstOrDefaultAsync(a => a.ID == id);
-
-            if (animal == null)
-            {
-                return NotFound();
-            }
-
-            // Check if current user owns this animal
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (animal.OwnerId.ToString() != userId && !User.IsInRole("Admin"))
-            {
-                TempData["Error"] = "You can only edit your own animals.";
-                return RedirectToAction("Index", "Animals");
-            }
-
-            return View(animal);
-        }
-
-        // POST: Animals/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ID,Name,Type,Age,Description,ImageFile")] Animal animal)
-        {
-            if (id != animal.ID)
-            {
-                return NotFound();
-            }
-
-            var existingAnimal = await _context.Animals.FindAsync(id);
-            if (existingAnimal == null)
-            {
-                return NotFound();
-            }
-
-            // Verify ownership
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (existingAnimal.OwnerId.ToString() != userId && !User.IsInRole("Admin"))
-            {
-                TempData["Error"] = "You can only edit your own animals.";
-                return RedirectToAction("Index", "Animals");
-            }
-
-            // Remove validation for fields we don't want to validate
-            ModelState.Remove("Owner");
-            ModelState.Remove("OwnerId");
-            ModelState.Remove("ImgURL");
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    // Update animal properties
-                    existingAnimal.Name = animal.Name;
-                    existingAnimal.Type = animal.Type;
-                    existingAnimal.Age = animal.Age;
-                    existingAnimal.Description = animal.Description ?? string.Empty;
-
-                    // Handle image update if new file is uploaded
-                    if (animal.ImageFile != null && animal.ImageFile.Length > 0)
-                    {
-                        // Delete old image if exists
-                        if (!string.IsNullOrEmpty(existingAnimal.ImgURL))
-                        {
-                            string oldFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot",
-                                existingAnimal.ImgURL.TrimStart('/'));
-                            if (System.IO.File.Exists(oldFilePath))
-                            {
-                                System.IO.File.Delete(oldFilePath);
-                            }
-                        }
-
-                        // Save new image
-                        string folder = "images/";
-                        string serverFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", folder);
-                        if (!Directory.Exists(serverFolder))
-                            Directory.CreateDirectory(serverFolder);
-
-                        string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(animal.ImageFile.FileName);
-                        string filePath = Path.Combine(serverFolder, uniqueFileName);
-
-                        using (var fileStream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await animal.ImageFile.CopyToAsync(fileStream);
-                        }
-                        existingAnimal.ImgURL = "/" + folder + uniqueFileName;
-                    }
-
-                    // Mark as modified and save
-                    _context.Entry(existingAnimal).State = EntityState.Modified;
-                    await _context.SaveChangesAsync();
-
-                    TempData["Success"] = $"{existingAnimal.Name}'s information has been updated!";
-                    return RedirectToAction(nameof(Details), new { id = existingAnimal.ID });
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!AnimalExists(animal.ID))
-                    {
-                        return NotFound();
-                    }
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    TempData["Error"] = $"Error saving changes: {ex.Message}";
-                    return View(animal);
-                }
-            }
-
-            // If validation fails, return to form with errors
+            if (id == null) return NotFound();
+            var animal = await _context.Animals.Include(a => a.Owner).FirstOrDefaultAsync(a => a.ID == id);
+            if (animal == null) return NotFound();
             return View(animal);
         }
 
@@ -181,72 +43,116 @@ namespace AdaPET.Controllers
 
         // POST: Animals/Add
         [HttpPost]
-        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Add(Animal animal)
         {
-            
-            if (!ModelState.IsValid)
+            // بنشيل الـ Validation من الحاجات اللي مش بتتبعت من الفورم عشان ميعملش Required Error
+            ModelState.Remove("Owner");
+            ModelState.Remove("OwnerId");
+            ModelState.Remove("ImgURL");
+
+            if (ModelState.IsValid)
             {
-                
-                return View(animal);
-            }
-
-           
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (string.IsNullOrEmpty(userId))
-            {
-                return RedirectToAction("Login", "Account");
-            }
-
-            
-            if (animal.ImageFile != null)
-            {
-                string folder = "images/";
-                string serverFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", folder);
-
-                if (!Directory.Exists(serverFolder))
-                    Directory.CreateDirectory(serverFolder);
-
-                // بنعمل اسم فريد للصورة عشان لو يوزر تاني رفع صورة بنفس الاسم ميمسحوش بعض
-                string uniqueFileName = Guid.NewGuid().ToString() + "_" + animal.ImageFile.FileName;
-                string filePath = Path.Combine(serverFolder, uniqueFileName);
-
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
                 {
-                    await animal.ImageFile.CopyToAsync(fileStream);
+                    return RedirectToAction("Login", "Account");
                 }
 
-                // بنخزن المسار اللي هيتحفظ في الداتابيز عشان نعرف نعرضها في الـ View
-                animal.ImgURL = "/" + folder + uniqueFileName;
+                // التعامل مع الصورة
+                if (animal.ImageFile != null)
+                {
+                    string folder = "images/";
+                    string serverFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", folder);
+                    if (!Directory.Exists(serverFolder)) Directory.CreateDirectory(serverFolder);
+
+                    string uniqueFileName = Guid.NewGuid().ToString() + "_" + animal.ImageFile.FileName;
+                    string filePath = Path.Combine(serverFolder, uniqueFileName);
+
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await animal.ImageFile.CopyToAsync(fileStream);
+                    }
+                    animal.ImgURL = "/" + folder + uniqueFileName;
+                }
+                else
+                {
+                    animal.ImgURL = "/images/default.png"; // صورة افتراضية لو مرفعش
+                }
+
+                animal.OwnerId = int.Parse(userId);
+                _context.Animals.Add(animal);
+                await _context.SaveChangesAsync();
+
+                TempData["Success"] = $"{animal.Name} has been added successfully!";
+                return RedirectToAction(nameof(Index));
             }
-
-            // 4. ربط الحيوان بصاحبه وحفظ البيانات
-            animal.OwnerId = int.Parse(userId);
-            _context.Animals.Add(animal);
-            await _context.SaveChangesAsync();
-
-                TempData["Success"] = $"{animal.Name} has been added to your profile!";
-                return RedirectToAction("Details", "UserProfile", new { id = userId });
-            }
-
-            // If validation fails, return to form with errors
             return View(animal);
         }
 
-        // GET: Animals/ContactOwner/5
-        public async Task<IActionResult> ContactOwner(int id)
+        // GET: Animals/Edit/5
+        [HttpGet]
+        public async Task<IActionResult> Edit(int? id)
         {
-            var animal = await _context.Animals
-                .Include(a => a.Owner)
-                .FirstOrDefaultAsync(a => a.ID == id);
+            if (id == null) return NotFound();
+            var animal = await _context.Animals.FindAsync(id);
+            if (animal == null) return NotFound();
 
-            if (animal == null)
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (animal.OwnerId.ToString() != userId && !User.IsInRole("Admin"))
             {
-                return NotFound();
+                return Forbid();
             }
+            return View(animal);
+        }
 
+        // POST: Animals/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, Animal animal)
+        {
+            if (id != animal.ID) return NotFound();
+
+            ModelState.Remove("Owner");
+            ModelState.Remove("OwnerId");
+            ModelState.Remove("ImgURL");
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var existingAnimal = await _context.Animals.AsNoTracking().FirstOrDefaultAsync(a => a.ID == id);
+
+                    if (animal.ImageFile != null)
+                    {
+                        // كود رفع الصورة الجديدة (نفس اللي في الـ Add)
+                        string folder = "images/";
+                        string serverFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", folder);
+                        string uniqueFileName = Guid.NewGuid().ToString() + "_" + animal.ImageFile.FileName;
+                        string filePath = Path.Combine(serverFolder, uniqueFileName);
+
+                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await animal.ImageFile.CopyToAsync(fileStream);
+                        }
+                        animal.ImgURL = "/" + folder + uniqueFileName;
+                    }
+                    else
+                    {
+                        animal.ImgURL = existingAnimal.ImgURL; // الحفاظ على الصورة القديمة
+                    }
+
+                    animal.OwnerId = existingAnimal.OwnerId; // الحفاظ على صاحب الحيوان
+                    _context.Update(animal);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!AnimalExists(animal.ID)) return NotFound();
+                    throw;
+                }
+                return RedirectToAction(nameof(Index));
+            }
             return View(animal);
         }
 
@@ -258,52 +164,12 @@ namespace AdaPET.Controllers
             var animal = await _context.Animals.FindAsync(id);
             if (animal != null)
             {
-                // Delete image file if exists
-                if (!string.IsNullOrEmpty(animal.ImgURL))
-                {
-                    string filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot",
-                        animal.ImgURL.TrimStart('/'));
-                    if (System.IO.File.Exists(filePath))
-                    {
-                        System.IO.File.Delete(filePath);
-                    }
-                }
-
                 _context.Animals.Remove(animal);
                 await _context.SaveChangesAsync();
-                TempData["Success"] = "Animal has been deleted successfully!";
             }
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
 
-        // ✅ FIXED: POST: Animals/ToggleAdoption/5 - Now redirects to Details page
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ToggleAdoption(int id)
-        {
-            var animal = await _context.Animals.FindAsync(id);
-            if (animal != null)
-            {
-                // بنعكس الحالة بس: لو true تبقى false والعكس
-                animal.IsAdopted = !animal.IsAdopted;
-
-                _context.Update(animal);
-                await _context.SaveChangesAsync();
-
-                string status = animal.IsAdopted ? "adopted" : "marked as available for adoption";
-                TempData["Success"] = $"{animal.Name} has been {status}!";
-
-                // ✅ FIX: Redirect back to Details page instead of Index
-                return RedirectToAction(nameof(Details), new { id = animal.ID });
-            }
-            catch (Exception ex)
-            {
-                TempData["Error"] = $"Error updating adoption status: {ex.Message}";
-                return RedirectToAction(nameof(Index));
-            }
-        }
-
-        // Check if animal exists
         private bool AnimalExists(int id)
         {
             return _context.Animals.Any(e => e.ID == id);
