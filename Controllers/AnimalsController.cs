@@ -38,9 +38,18 @@ namespace AdaPET.Controllers
 
         // new animal data
         [HttpPost]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Add(Animal animal)
         {
-            // get user id 
+            
+            if (!ModelState.IsValid)
+            {
+                
+                return View(animal);
+            }
+
+           
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (string.IsNullOrEmpty(userId))
@@ -48,12 +57,16 @@ namespace AdaPET.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
+            
             if (animal.ImageFile != null)
             {
                 string folder = "images/";
                 string serverFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", folder);
-                if (!Directory.Exists(serverFolder)) Directory.CreateDirectory(serverFolder);
 
+                if (!Directory.Exists(serverFolder))
+                    Directory.CreateDirectory(serverFolder);
+
+                // بنعمل اسم فريد للصورة عشان لو يوزر تاني رفع صورة بنفس الاسم ميمسحوش بعض
                 string uniqueFileName = Guid.NewGuid().ToString() + "_" + animal.ImageFile.FileName;
                 string filePath = Path.Combine(serverFolder, uniqueFileName);
 
@@ -61,9 +74,12 @@ namespace AdaPET.Controllers
                 {
                     await animal.ImageFile.CopyToAsync(fileStream);
                 }
+
+                // بنخزن المسار اللي هيتحفظ في الداتابيز عشان نعرف نعرضها في الـ View
                 animal.ImgURL = "/" + folder + uniqueFileName;
             }
 
+            // 4. ربط الحيوان بصاحبه وحفظ البيانات
             animal.OwnerId = int.Parse(userId);
             _context.Animals.Add(animal);
             await _context.SaveChangesAsync();
@@ -106,15 +122,9 @@ namespace AdaPET.Controllers
             var animal = await _context.Animals.FindAsync(id);
             if (animal != null)
             {
+                // بنعكس الحالة بس: لو true تبقى false والعكس
                 animal.IsAdopted = !animal.IsAdopted;
-                if (animal.IsAdopted)
-                {
-                    animal.AdoptedDate = DateTime.Now;
-                }
-                else
-                {
-                    animal.AdoptedDate = null;
-                }
+
                 _context.Update(animal);
                 await _context.SaveChangesAsync();
             }
