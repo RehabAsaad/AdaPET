@@ -87,6 +87,9 @@ namespace AdaPET.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Schedule")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("location")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -134,6 +137,10 @@ namespace AdaPET.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhotoURL")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 

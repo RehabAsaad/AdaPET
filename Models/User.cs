@@ -29,7 +29,7 @@ namespace AdaPET.Models
         [DataType(DataType.Password)]
 
         [MinLength(6, ErrorMessage = "password must be at least 6 characters")]
-
+        public string? PhotoURL {  get; set; }
         public string Password { get; set; }
         public string UserRole { get; set; } // "User" or "Doctor"
         public virtual Doctor Doctor { get; set; }

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AdaPET.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260503173713_new")]
-    partial class @new
+    [Migration("20260509193536_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -57,6 +57,10 @@ namespace AdaPET.Migrations
                     b.Property<int>("OwnerId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("ID");
 
                     b.HasIndex("OwnerId");
@@ -84,6 +88,9 @@ namespace AdaPET.Migrations
 
                     b.Property<string>("Phone")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Schedule")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("location")
@@ -133,6 +140,10 @@ namespace AdaPET.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhotoURL")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
