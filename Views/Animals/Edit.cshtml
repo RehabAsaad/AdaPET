@@ -18,6 +18,7 @@
                     <form asp-action="Edit" method="post" enctype="multipart/form-data">
                         @Html.AntiForgeryToken()
 
+                        @* الحقول المخفية لضمان عدم فقدان البيانات الأساسية *@
                         <input type="hidden" asp-for="ID" />
                         <input type="hidden" asp-for="OwnerId" />
                         <input type="hidden" asp-for="ImgURL" />
@@ -32,6 +33,9 @@
                             </div>
                         }
 
+                        @* ملخص الأخطاء *@
+                        <div asp-validation-summary="All" class="text-danger"></div>
+
                         <div class="mb-3">
                             <label asp-for="Name" class="form-label fw-bold">Pet Name *</label>
                             <input asp-for="Name" class="form-control" required />
@@ -40,33 +44,8 @@
 
                         <div class="mb-3">
                             <label asp-for="Type" class="form-label fw-bold">Animal Type *</label>
-                            <!-- ComboBox: Choose from list OR write custom value -->
-                            <input list="animalTypes" asp-for="Type" class="form-control" placeholder="Select or type animal type" required />
-                            <datalist id="animalTypes">
-                                <option value="Dog">🐕 Dog</option>
-                                <option value="Cat">🐈 Cat</option>
-                                <option value="Bird">🐦 Bird</option>
-                                <option value="Rabbit">🐇 Rabbit</option>
-                                <option value="Fish">🐟 Fish</option>
-                                <option value="Hamster">🐹 Hamster</option>
-                                <option value="Guinea Pig">🐹 Guinea Pig</option>
-                                <option value="Horse">🐎 Horse</option>
-                                <option value="Cow">🐄 Cow</option>
-                                <option value="Sheep">🐑 Sheep</option>
-                                <option value="Goat">🐐 Goat</option>
-                                <option value="Chicken">🐔 Chicken</option>
-                                <option value="Duck">🦆 Duck</option>
-                                <option value="Turtle">🐢 Turtle</option>
-                                <option value="Snake">🐍 Snake</option>
-                                <option value="Lizard">🦎 Lizard</option>
-                                <option value="Frog">🐸 Frog</option>
-                                <option value="Mouse">🐭 Mouse</option>
-                                <option value="Rat">🐀 Rat</option>
-                                <option value="Ferret">🐾 Ferret</option>
-                                <option value="Parrot">🦜 Parrot</option>
-                                <option value="Other">🐾 Other</option>
-                            </datalist>
-                            <small class="text-muted">Select from list or type your own animal type</small>
+                            @* شيلنا الـ list عشان اليوزر يكتب النوع يدوي *@
+                            <input asp-for="Type" class="form-control" placeholder="Enter animal type (e.g., Dog, Cat, Bird)" required />
                             <span asp-validation-for="Type" class="text-danger"></span>
                         </div>
 
@@ -78,18 +57,19 @@
 
                         <div class="mb-3">
                             <label asp-for="Description" class="form-label fw-bold">Description</label>
-                            <textarea asp-for="Description" class="form-control" rows="3" placeholder="Tell us about your pet's personality, health, etc."></textarea>
+                            <textarea asp-for="Description" class="form-control" rows="3" data-val="false" placeholder="Tell us about your pet's personality..."></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="ImageFile" class="form-label fw-bold">Change Photo (Optional)</label>
-                            <input asp-for="ImageFile" type="file" class="form-control" accept="image/*" />
+                            <label class="form-label fw-bold">Change Photo (Optional)</label>
+                            <input type="file" name="ImageFile" id="ImageFile" class="form-control" accept="image/*" data-val="false" />
                             <small class="text-muted">Leave empty to keep current photo</small>
                         </div>
 
-                        <div class="d-flex justify-content-between">
-                            <a asp-action="Details" asp-route-id="@Model.ID" class="btn btn-secondary">Cancel</a>
-                            <button type="submit" class="btn btn-warning">Save Changes</button>
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+                            <button type="submit" class="btn btn-warning fw-bold">Save Changes</button>
                         </div>
                     </form>
                 </div>

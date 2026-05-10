@@ -23,7 +23,6 @@
 
 <div class="container mt-4">
     <div class="row">
-        <!-- User Information Card -->
         <div class="col-md-4">
             <div class="card shadow-sm">
                 <div class="card-header @(Model.UserRole == "Doctor" ? "bg-info" : "bg-primary") text-white">
@@ -95,7 +94,12 @@
                         }
                     </dl>
 
-                    <!-- Buttons Section -->
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-paw"></i> My Animals (@Model.Animals.Count)
+                    </h4>
                     @{
                         // Get the currently logged-in user ID
                         var currentUserIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -205,19 +209,14 @@
                                             </dl>
                                         </div>
                                         <div class="card-footer bg-transparent">
-                                            <div class="btn-group w-100" role="group">
-                                                <a asp-controller="Animals" asp-action="Details" asp-route-id="@animal.ID"
-                                                   class="btn btn-sm btn-outline-primary">
-                                                    <i class="fas fa-info-circle"></i> View Details
+                                            @if (isOwnProfile)
+                                            {
+                                                @* تم حذف زرار View Details وجعل Edit يأخذ العرض الكامل *@
+                                                <a asp-controller="Animals" asp-action="Edit" asp-route-id="@animal.ID"
+                                                       class="btn btn-sm btn-outline-warning w-100">
+                                                    <i class="fas fa-edit"></i> Edit
                                                 </a>
-                                                @if (isOwnProfile)
-                                                {
-                                                    <a asp-controller="Animals" asp-action="Edit" asp-route-id="@animal.ID"
-                                                       class="btn btn-sm btn-outline-warning">
-                                                        <i class="fas fa-edit"></i> Edit
-                                                    </a>
-                                                }
-                                            </div>
+                                            }
                                         </div>
                                     </div>
                                 </div>

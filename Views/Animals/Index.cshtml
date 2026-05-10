@@ -1,172 +1,207 @@
 ﻿@using System.Security.Claims
 @model IEnumerable<AdaPET.Models.Animal>
+@Html.AntiForgeryToken()
 
 @{
     ViewData["Title"] = "All Animals";
-    var searchPerformed = ViewBag.SearchPerformed as bool? ?? false;
     var currentFilter = ViewBag.CurrentFilter as string ?? "";
 }
 
 <style>
-    .search-section {
-        margin-bottom: 25px;
+    /* تكبير هيدر الصفحة ليكون أوضح */
+    .gallery-header-main {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #000000;
+        margin-bottom: 30px;
+        text-align: left;
+        letter-spacing: -1px;
     }
 
-    .search-box {
-        display: flex;
-        gap: 8px;
-        max-width: 400px;
+    /* تنسيق بار البحث */
+    .search-wrapper {
+        position: relative;
+        max-width: 500px;
+        margin: 0 auto 40px auto;
     }
 
-        .search-box input {
-            flex: 1;
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 25px;
-            font-size: 14px;
-        }
+    .custom-search-bar {
+        width: 100%;
+        padding: 12px 20px 12px 45px;
+        border-radius: 30px;
+        border: 2px solid #e0e0e0;
+        background-color: #fff;
+        transition: all 0.3s ease;
+        outline: none;
+    }
 
-        .search-box button {
-            padding: 8px 18px;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-        }
-
-            .search-box button:hover {
-                background: #0056b3;
-            }
-
+    /* تنسيق الكروت */
     .animal-card {
-        border: 1px solid #eee;
-        border-radius: 12px;
+        border: none;
+        border-radius: 20px;
         overflow: hidden;
-        transition: 0.3s;
+        transition: all 0.3s ease;
         background: white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
     }
-
-        .animal-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
 
     .animal-image {
-        height: 150px;
-        background: #f5f5f5;
-        display: flex;
+        height: 280px;
+        position: relative;
+    }
+
+    .animal-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .status-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        z-index: 2;
+    }
+
+    .bg-available { background: #28a745; color: white; }
+    .bg-adopted { background: #dc3545; color: white; }
+
+    /* تنسيق الأزرار المفرغة (Outline) */
+    .btn-custom-outline {
+        padding: 8px 15px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        text-align: center;
+        background-color: transparent;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
+        flex-grow: 1;
     }
 
-        .animal-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+    .btn-outline-success-custom { border: 1px solid #28a745; color: #28a745; }
+    .btn-outline-success-custom:hover { background-color: #28a745; color: white; }
 
-    .status {
-        display: inline-block;
-        padding: 3px 10px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: bold;
+    .btn-outline-primary-custom { border: 1px solid #007bff; color: #007bff; }
+    .btn-outline-primary-custom:hover { background-color: #007bff; color: white; }
+
+    .btn-outline-warning-custom { border: 1px solid #ffc107; color: #ffc107; }
+    .btn-outline-warning-custom:hover { background-color: #ffc107; color: white; }
+
+    .card-body-custom {
+        padding: 20px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
     }
 
-    .status-adopted {
-        background: #dc3545;
-        color: white;
-    }
-
-    .status-available {
-        background: #28a745;
-        color: white;
-    }
-
-    .btn-sm {
-        padding: 4px 10px;
-        font-size: 12px;
+    .type-badge {
+        background-color: #f8f9fa;
+        color: #007bff;
+        border: 1px solid #dee2e6;
+        padding: 4px 12px;
         border-radius: 15px;
-        text-decoration: none;
-        display: inline-block;
-        margin: 2px;
-    }
-
-    .btn-primary {
-        background: #007bff;
-        color: white;
-    }
-
-    .btn-warning {
-        background: #ffc107;
-        color: #333;
-    }
-
-    .btn-danger {
-        background: #dc3545;
-        color: white;
-        border: none;
-        cursor: pointer;
+        font-size: 0.85rem;
+        font-weight: 600;
     }
 </style>
 
-<div class="container">
-    <h2 class="mb-3">🐾 All Animals</h2>
+<div class="container py-4">
+    <div class="gallery-title-container">
+        <h1 class="gallery-header-main d-flex align-items-center">
+            <i class="fas fa-paw me-3 text-dark"></i> 
+            Animal Gallery
+        </h1>
+    </div>
 
-    <!-- Simple Search Bar -->
-    <div class="search-section">
+    <div class="search-wrapper">
         <form asp-action="Index" method="get">
-            <div class="search-box">
-                <input type="text"
-                       name="searchType"
-                       placeholder="Search by type..."
-                       value="@currentFilter" />
-                <button type="submit">🔍 Search</button>
-                <a asp-action="Index" style="padding: 8px 15px; background: #6c757d; color: white; border-radius: 25px; text-decoration: none;">Reset</a>
-            </div>
+            <input type="text" name="searchType" class="custom-search-bar" placeholder="Search for pets..." value="@currentFilter" />
         </form>
     </div>
 
-    <!-- ✅ تم إزالة عرض رسالة Success من هنا لأنها موجودة في Layout -->
-    @* تم حذف عرض TempData["Success"] و TempData["Error"] لأنها تظهر في Layout *@
-
-    <!-- Animals Grid -->
     @if (Model.Any())
     {
-        <div class="row">
+        <div class="row g-4">
             @foreach (var animal in Model)
             {
-                <div class="col-md-3 col-sm-6 mb-3">
+                <div class="col-lg-4 col-md-6 col-sm-12">
                     <div class="animal-card">
                         <div class="animal-image">
-                            @if (!string.IsNullOrEmpty(animal.ImgURL))
-                            {
-                                <img src="@animal.ImgURL" alt="@animal.Name">
-                            }
-                            else
-                            {
-                                <span style="font-size: 40px;">🐕</span>
-                            }
+                            <span class="status-badge @(animal.IsAdopted ? "bg-adopted" : "bg-available")">
+                                @(animal.IsAdopted ? "Adopted" : "Available")
+                            </span>
+                            <img src="@animal.ImgURL" alt="@animal.Name">
                         </div>
-                        <div style="padding: 12px;">
-                            <h6 style="margin: 0 0 5px 0;">@animal.Name</h6>
-                            <span style="font-size: 12px; color: #666;">🐾 @animal.Type</span>
-                            <div style="margin: 8px 0;">
-                                <span class="status @(animal.IsAdopted ? "status-adopted" : "status-available")">
-                                    @(animal.IsAdopted ? "Adopted" : "Available")
-                                </span>
+                        <div class="card-body-custom">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <h4 class="fw-bold text-dark mb-0">@animal.Name</h4>
+                                    <span class="type-badge">@animal.Type</span>
+                                </div>
+                                
+                                <div class="mb-2">
+                                    <span class="text-muted small">
+                                         Age: @animal.Age Years
+                                    </span>
+                                </div>
+
+                                <p class="text-muted small mb-0">Find a loving home today.</p>
                             </div>
-                            <div style="margin-top: 10px;">
-                                <a asp-action="Details" asp-route-id="@animal.ID" class="btn-sm btn-primary">View</a>
-                                @{
-                                    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                                }
-                                @if (User.Identity.IsAuthenticated && userId == animal.OwnerId.ToString())
-                                {
-                                    <a asp-action="Edit" asp-route-id="@animal.ID" class="btn-sm btn-warning">Edit</a>
-                                    <button onclick="deleteAnimal(@animal.ID)" class="btn-sm btn-danger">Delete</button>
-                                }
+
+                            <div class="mt-4 pt-3 border-top">
+                                @{ var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); }
+                                
+                                <div class="d-flex align-items-center gap-2">
+                                    @if (User.Identity.IsAuthenticated && userId == animal.OwnerId.ToString())
+                                    {
+                                        @if (!animal.IsAdopted)
+                                        {
+                                            <a asp-action="ToggleAdoptionStatus" asp-route-id="@animal.ID" class="btn-custom-outline btn-outline-success-custom shadow-sm">
+                                                Mark as Adopted
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a asp-action="ToggleAdoptionStatus" asp-route-id="@animal.ID" class="btn-custom-outline btn-outline-warning-custom shadow-sm">
+                                                Make Available
+                                            </a>
+                                        }
+
+                                        <div class="d-flex gap-2">
+                                            <a asp-action="Edit" asp-route-id="@animal.ID" class="btn btn-sm btn-outline-warning rounded-circle shadow-sm" style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button type="button" onclick="deleteAnimal(@animal.ID)" class="btn btn-sm btn-outline-danger rounded-circle shadow-sm" style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        @if (!animal.IsAdopted)
+                                        {
+                                            <a asp-action="ContactOwner" asp-route-id="@animal.ID" class="btn-custom-outline btn-outline-primary-custom w-100 shadow-sm">
+                                                Contact Owner
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary p-2 w-100" style="border-radius: 12px;">Already Adopted</span>
+                                        }
+                                    }
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -176,13 +211,24 @@
     }
     else
     {
-        <div class="alert alert-info text-center">
-            <h5>No animals found</h5>
-            @if (searchPerformed)
+        @* الجزء الخاص في حال عدم وجود نتائج بحث *@
+        <div class="text-center py-5">
+            <div class="mb-4">
+                <i class="fas fa-search fa-5x text-muted opacity-50"></i>
+            </div>
+            <h2 class="fw-bold text-dark">No pets found!</h2>
+            @if (!string.IsNullOrEmpty(currentFilter))
             {
-                <p>No results for "@currentFilter"</p>
-                <a asp-action="Index" class="btn btn-primary">View All</a>
+                <p class="text-muted mb-4">We couldn't find any animals matching "@currentFilter".</p>
             }
+            else
+            {
+                <p class="text-muted mb-4">The gallery is currently empty.</p>
+            }
+            
+            <a asp-action="Index" class="btn btn-warning btn-lg px-5 fw-bold shadow-sm" style="border-radius: 30px;">
+                <i class="fas fa-redo me-2"></i> View All Animals
+            </a>
         </div>
     }
 </div>
@@ -190,15 +236,20 @@
 @section Scripts {
     <script>
         function deleteAnimal(id) {
-            if (confirm('Delete this animal?')) {
+            if (confirm('Are you sure you want to delete this record?')) {
                 var form = document.createElement('form');
                 form.method = 'POST';
-                form.action = '@Url.Action("Delete", "Animals")';
-                var input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'id';
-                input.value = id;
-                form.appendChild(input);
+                form.action = '/Animals/Delete/' + id;
+                
+                var token = $('input[name="__RequestVerificationToken"]').val();
+                if (token) {
+                    var tokenInput = document.createElement('input');
+                    tokenInput.type = 'hidden';
+                    tokenInput.name = '__RequestVerificationToken';
+                    tokenInput.value = token;
+                    form.appendChild(tokenInput);
+                }
+
                 document.body.appendChild(form);
                 form.submit();
             }
