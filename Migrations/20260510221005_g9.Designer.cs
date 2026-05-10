@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AdaPET.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260510141916_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260510221005_g9")]
+    partial class g9
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -66,6 +66,55 @@ namespace AdaPET.Migrations
                     b.HasIndex("OwnerId");
 
                     b.ToTable("Animals");
+                });
+
+            modelBuilder.Entity("AdaPET.Models.Appointment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AppointmentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DoctorId")
+                        .HasColumnType("int");
+
+                    b.Property<TimeSpan>("EndTime")
+                        .HasColumnType("time");
+
+                    b.Property<int>("ScheduleId")
+                        .HasColumnType("int");
+
+                    b.Property<TimeSpan>("StartTime")
+                        .HasColumnType("time");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("TimeSlotId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DoctorId");
+
+                    b.HasIndex("ScheduleId");
+
+                    b.HasIndex("TimeSlotId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Appointments");
                 });
 
             modelBuilder.Entity("AdaPET.Models.Clinic", b =>
@@ -133,23 +182,59 @@ namespace AdaPET.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("DoctorUserId")
+                    b.Property<int>("DoctorId")
                         .HasColumnType("int");
 
                     b.Property<TimeSpan>("EndTime")
                         .HasColumnType("time");
 
-                    b.Property<bool>("IsAvailable")
+                    b.Property<TimeSpan>("StartTime")
+                        .HasColumnType("time");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DoctorId");
+
+                    b.ToTable("Schedules");
+                });
+
+            modelBuilder.Entity("AdaPET.Models.TimeSlot", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<TimeSpan>("EndTime")
+                        .HasColumnType("time");
+
+                    b.Property<bool>("IsBooked")
                         .HasColumnType("bit");
+
+                    b.Property<int>("ScheduleId")
+                        .HasColumnType("int");
 
                     b.Property<TimeSpan>("StartTime")
                         .HasColumnType("time");
 
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("DoctorUserId");
+                    b.HasIndex("ScheduleId");
 
-                    b.ToTable("Schedules");
+                    b.HasIndex("UserId");
+
+                    b.ToTable("TimeSlots");
                 });
 
             modelBuilder.Entity("AdaPET.Models.User", b =>
@@ -194,10 +279,44 @@ namespace AdaPET.Migrations
                     b.HasOne("AdaPET.Models.User", "Owner")
                         .WithMany("Animals")
                         .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Owner");
+                });
+
+            modelBuilder.Entity("AdaPET.Models.Appointment", b =>
+                {
+                    b.HasOne("AdaPET.Models.Doctor", "Doctor")
+                        .WithMany()
+                        .HasForeignKey("DoctorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("AdaPET.Models.Schedule", "Schedule")
+                        .WithMany()
+                        .HasForeignKey("ScheduleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("AdaPET.Models.TimeSlot", "TimeSlot")
+                        .WithMany("Appointments")
+                        .HasForeignKey("TimeSlotId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("AdaPET.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Doctor");
+
+                    b.Navigation("Schedule");
+
+                    b.Navigation("TimeSlot");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("AdaPET.Models.Clinic", b =>
@@ -205,7 +324,7 @@ namespace AdaPET.Migrations
                     b.HasOne("AdaPET.Models.Doctor", "Doctor")
                         .WithMany("Clinics")
                         .HasForeignKey("DoctorId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Doctor");
@@ -216,7 +335,7 @@ namespace AdaPET.Migrations
                     b.HasOne("AdaPET.Models.User", "User")
                         .WithOne("Doctor")
                         .HasForeignKey("AdaPET.Models.Doctor", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -224,18 +343,48 @@ namespace AdaPET.Migrations
 
             modelBuilder.Entity("AdaPET.Models.Schedule", b =>
                 {
-                    b.HasOne("AdaPET.Models.User", "DoctorUser")
-                        .WithMany()
-                        .HasForeignKey("DoctorUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                    b.HasOne("AdaPET.Models.Doctor", "Doctor")
+                        .WithMany("Schedules")
+                        .HasForeignKey("DoctorId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("DoctorUser");
+                    b.Navigation("Doctor");
+                });
+
+            modelBuilder.Entity("AdaPET.Models.TimeSlot", b =>
+                {
+                    b.HasOne("AdaPET.Models.Schedule", "Schedule")
+                        .WithMany("TimeSlots")
+                        .HasForeignKey("ScheduleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("AdaPET.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Schedule");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("AdaPET.Models.Doctor", b =>
                 {
                     b.Navigation("Clinics");
+
+                    b.Navigation("Schedules");
+                });
+
+            modelBuilder.Entity("AdaPET.Models.Schedule", b =>
+                {
+                    b.Navigation("TimeSlots");
+                });
+
+            modelBuilder.Entity("AdaPET.Models.TimeSlot", b =>
+                {
+                    b.Navigation("Appointments");
                 });
 
             modelBuilder.Entity("AdaPET.Models.User", b =>

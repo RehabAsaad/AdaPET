@@ -15,6 +15,6 @@ namespace AdaPET.Models
         [ForeignKey("UserId")]
         public User User { get; set; }
         public ICollection<Clinic> Clinics { get; set; }
-
+        public virtual ICollection<Schedule> Schedules { get; set; } = new List<Schedule>();
     }
 }
