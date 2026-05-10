@@ -85,18 +85,15 @@
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
 
-                                    <!-- My Profile Link -->
+                                    <!-- My Profile Link (Logout موجود في صفحة البروفايل فقط) -->
                                     <li>
                                         <a class="dropdown-item" asp-controller="UserProfile" asp-action="MyProfile">
                                             <i class="fas fa-user-circle"></i> My Profile
                                         </a>
                                     </li>
 
-                                    <li>
-                                        <a class="dropdown-item text-danger" asp-controller="Account" asp-action="Logout">
-                                            🚪 Logout
-                                        </a>
-                                    </li>
+                                    <!-- ❌ تم إزالة زر Logout من هنا ✅ -->
+                                    <!-- Logout will only be available in the Profile page -->
                                 </ul>
                             </li>
                         }
