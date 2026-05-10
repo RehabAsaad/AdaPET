@@ -20,7 +20,7 @@ namespace AdaPET.Migrations
                     Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PhotoURL = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PhotoURL = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserRole = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
@@ -75,6 +75,29 @@ namespace AdaPET.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Schedules",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    DoctorUserId = table.Column<int>(type: "int", nullable: false),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    StartTime = table.Column<TimeSpan>(type: "time", nullable: false),
+                    EndTime = table.Column<TimeSpan>(type: "time", nullable: false),
+                    IsAvailable = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Schedules", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Schedules_Users_DoctorUserId",
+                        column: x => x.DoctorUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Clinics",
                 columns: table => new
                 {
@@ -107,6 +130,11 @@ namespace AdaPET.Migrations
                 name: "IX_Clinics_DoctorId",
                 table: "Clinics",
                 column: "DoctorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Schedules_DoctorUserId",
+                table: "Schedules",
+                column: "DoctorUserId");
         }
 
         /// <inheritdoc />
@@ -117,6 +145,9 @@ namespace AdaPET.Migrations
 
             migrationBuilder.DropTable(
                 name: "Clinics");
+
+            migrationBuilder.DropTable(
+                name: "Schedules");
 
             migrationBuilder.DropTable(
                 name: "Doctors");

@@ -14,13 +14,14 @@ namespace AdaPET.Controllers
             _context = context;
         }
 
-        // GET: Animals - الجاليري + البحث
+        // 1. GET: Animals - عرض الجاليري مع ميزة البحث
         public async Task<IActionResult> Index(string searchType)
         {
             var animals = from a in _context.Animals select a;
+
             if (!string.IsNullOrEmpty(searchType))
             {
-                animals = animals.Where(s => s.Type.Contains(searchType));
+                animals = animals.Where(s => s.Type.Contains(searchType) || s.Name.Contains(searchType));
                 ViewBag.CurrentFilter = searchType;
                 ViewBag.SearchPerformed = true;
             }
@@ -28,10 +29,11 @@ namespace AdaPET.Controllers
             {
                 ViewBag.SearchPerformed = false;
             }
+
             return View(await animals.ToListAsync());
         }
 
-        // 2. إضافة حيوان جديد (Add) - GET & POST
+        // 2. إضافة حيوان جديد (Add)
         [HttpGet]
         public IActionResult Add()
         {
@@ -52,84 +54,163 @@ namespace AdaPET.Controllers
                     string folder = "images/";
                     string serverFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", folder);
                     if (!Directory.Exists(serverFolder)) Directory.CreateDirectory(serverFolder);
+
                     string uniqueFileName = Guid.NewGuid().ToString() + "_" + animal.ImageFile.FileName;
                     string filePath = Path.Combine(serverFolder, uniqueFileName);
+
                     using (var fileStream = new FileStream(filePath, FileMode.Create))
                     {
                         await animal.ImageFile.CopyToAsync(fileStream);
                     }
                     animal.ImgURL = "/" + folder + uniqueFileName;
                 }
-                else { animal.ImgURL = "/images/default.png"; }
+                else
+                {
+                    animal.ImgURL = "/images/default.png";
+                }
 
                 animal.OwnerId = int.Parse(userId);
+                animal.IsAdopted = false;
+
                 _context.Animals.Add(animal);
                 await _context.SaveChangesAsync();
+
+                TempData["Success"] = "Pet added successfully!";
                 return RedirectToAction(nameof(Index));
             }
             return View(animal);
         }
 
-        // 3. حذف حيوان (Delete)
+        // 3. ميثود تبديل حالة التبني (Toggle Status)
+        // دي اللي بتخليكي كمالكة تغيري من Mark as Adopted لـ Make Available والعكس
+        public async Task<IActionResult> ToggleAdoptionStatus(int id)
+        {
+            var animal = await _context.Animals.FindAsync(id);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (animal == null) return NotFound();
+
+            if (userId != animal.OwnerId.ToString())
+            {
+                return RedirectToAction(nameof(Index));
+            }
+
+            animal.IsAdopted = !animal.IsAdopted;
+
+            if (animal.IsAdopted)
+            {
+                animal.AdoptedDate = DateTime.Now;
+            }
+            else
+            {
+                animal.AdoptedDate = null;
+            }
+
+            _context.Update(animal);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index)); // هيرجع للصفحة والعملية هتتم بس بدون الشريطة الخضراء
+        }
+
+        // 4. ميثود التواصل مع المالك (Contact Owner)
+        public async Task<IActionResult> ContactOwner(int id)
+        {
+            // لازم نستخدم Include عشان نجيب بيانات المالك (Owner) مع الحيوان
+            var animal = await _context.Animals
+                .Include(a => a.Owner)
+                .FirstOrDefaultAsync(a => a.ID == id);
+
+            if (animal == null)
+            {
+                return NotFound();
+            }
+
+            return View(animal);
+        }
+
+        // 5. حذف حيوان (Delete)
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        [ValidateAntiForgeryToken] 
         public async Task<IActionResult> Delete(int id)
         {
             var animal = await _context.Animals.FindAsync(id);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
             if (animal != null)
             {
-                _context.Animals.Remove(animal);
-                await _context.SaveChangesAsync();
+                // التأكد إن اللي بيمسح هو صاحب الحيوان
+                if (userId == animal.OwnerId.ToString())
+                {
+                    _context.Animals.Remove(animal);
+                    await _context.SaveChangesAsync();
+                    TempData["Success"] = "Pet removed successfully.";
+                }
             }
             return RedirectToAction(nameof(Index));
         }
 
-        // 4. تعديل بيانات حيوان (Edit) - GET & POST
+        // 6. تعديل بيانات حيوان (Edit)
         [HttpGet]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
             var animal = await _context.Animals.FindAsync(id);
             if (animal == null) return NotFound();
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId != animal.OwnerId.ToString()) return Forbid();
+
             return View(animal);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Animal animal)
+        public async Task<IActionResult> Edit(int id, [Bind("ID,Name,Description,Age,Type,ImgURL,OwnerId,IsAdopted,AdoptedDate")] Animal animal, IFormFile? ImageFile)
         {
             if (id != animal.ID) return NotFound();
+
+            // بنشيل أي أخطاء متعلقة بالصورة والوصف عشان نضمن إن ModelState يكون Valid
+            ModelState.Remove(nameof(ImageFile));
+            ModelState.Remove(nameof(animal.Description));
 
             if (ModelState.IsValid)
             {
                 try
                 {
+                    // سحب البيانات القديمة بدون تتبع عشان نعرف الـ ImgURL الأصلي
                     var existingAnimal = await _context.Animals.AsNoTracking().FirstOrDefaultAsync(a => a.ID == id);
                     if (existingAnimal == null) return NotFound();
 
-                    if (animal.ImageFile != null)
+                    // التعامل مع الصورة (استخدمنا الباراميتر المنفصل ImageFile)
+                    if (ImageFile != null && ImageFile.Length > 0)
                     {
                         string folder = "images/";
                         string serverFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", folder);
-                        string uniqueFileName = Guid.NewGuid().ToString() + "_" + animal.ImageFile.FileName;
+
+                        if (!Directory.Exists(serverFolder)) Directory.CreateDirectory(serverFolder);
+
+                        string uniqueFileName = Guid.NewGuid().ToString() + "_" + ImageFile.FileName;
                         string filePath = Path.Combine(serverFolder, uniqueFileName);
+
                         using (var fileStream = new FileStream(filePath, FileMode.Create))
                         {
-                            await animal.ImageFile.CopyToAsync(fileStream);
+                            await ImageFile.CopyToAsync(fileStream);
                         }
+
+                        // تحديث المسار بالصورة الجديدة
                         animal.ImgURL = "/" + folder + uniqueFileName;
                     }
                     else
                     {
+                        // لو مرفعش صورة، نرجع القيمة اللي كانت موجودة أصلاً
                         animal.ImgURL = existingAnimal.ImgURL;
                     }
 
+                    // الحفاظ على البيانات الأساسية
                     animal.OwnerId = existingAnimal.OwnerId;
-
-                    // معالجة حالة التبني (Adoption Status)
                     if (animal.IsAdopted)
                     {
-                        animal.AdoptedDate = DateTime.Now;
+                        animal.AdoptedDate = existingAnimal.AdoptedDate ?? DateTime.Now;
                     }
                     else
                     {
@@ -139,30 +220,25 @@ namespace AdaPET.Controllers
                     _context.Update(animal);
                     await _context.SaveChangesAsync();
 
-                    string status = animal.IsAdopted ? "adopted" : "available for adoption";
-                    TempData["Success"] = $"{animal.Name} has been marked as {status}!";
-
-                    return RedirectToAction(nameof(Details), new { id = animal.ID });
+                    TempData["Success"] = "Changes saved successfully!";
+                    return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
                     if (!AnimalExists(animal.ID)) return NotFound();
                     throw;
                 }
-                catch (Exception ex)
-                {
-                    TempData["Error"] = $"Error updating status: {ex.Message}";
-                    return RedirectToAction(nameof(Index));
-                }
             }
+
+            // لو فشل، بنرجع الفيو وهتظهر الأخطاء (لو فيه)
             return View(animal);
         }
 
-        // 5. تفاصيل الحيوان (Details)
+        // 7. تفاصيل الحيوان (Details)
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
-            var animal = await _context.Animals.Include(a => a.Owner).FirstOrDefaultAsync(a => a.ID == id);
+            var animal = await _context.Animals.FirstOrDefaultAsync(a => a.ID == id);
             if (animal == null) return NotFound();
             return View(animal);
         }

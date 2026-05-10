@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AdaPET.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260510003332_AddSchedulesTable")]
-    partial class AddSchedulesTable
+    [Migration("20260510141916_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -133,7 +133,7 @@ namespace AdaPET.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("DoctorId")
+                    b.Property<int>("DoctorUserId")
                         .HasColumnType("int");
 
                     b.Property<TimeSpan>("EndTime")
@@ -147,7 +147,7 @@ namespace AdaPET.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DoctorId");
+                    b.HasIndex("DoctorUserId");
 
                     b.ToTable("Schedules");
                 });
@@ -224,13 +224,13 @@ namespace AdaPET.Migrations
 
             modelBuilder.Entity("AdaPET.Models.Schedule", b =>
                 {
-                    b.HasOne("AdaPET.Models.User", "Doctor")
+                    b.HasOne("AdaPET.Models.User", "DoctorUser")
                         .WithMany()
-                        .HasForeignKey("DoctorId")
+                        .HasForeignKey("DoctorUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Doctor");
+                    b.Navigation("DoctorUser");
                 });
 
             modelBuilder.Entity("AdaPET.Models.Doctor", b =>
