@@ -40,7 +40,7 @@ namespace AdaPET.Controllers
                 }
 
                 foreach (var error in result.Errors)
-                    {
+                {
                     ModelState.AddModelError("", error);
                 }
                 return View(model);

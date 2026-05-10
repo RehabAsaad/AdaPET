@@ -14,11 +14,7 @@ namespace AdaPET.Controllers
             _context = context;
         }
 
-<<<<<<< HEAD
-        // GET: Animals - show all animals with search
-=======
-        // الجاليري + البحث
->>>>>>> 41f7c55ab5100c221debfba32cd5cecfd2c8f59d
+        // GET: Animals - الجاليري + البحث
         public async Task<IActionResult> Index(string searchType)
         {
             var animals = from a in _context.Animals select a;
@@ -46,8 +42,6 @@ namespace AdaPET.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Add(Animal animal)
         {
-            
-
             if (ModelState.IsValid)
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -100,10 +94,6 @@ namespace AdaPET.Controllers
             return View(animal);
         }
 
-<<<<<<< HEAD
-        // POST: Animals/ToggleAdoption/5 - Redirects to Details page
-=======
->>>>>>> 41f7c55ab5100c221debfba32cd5cecfd2c8f59d
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Animal animal)
@@ -115,6 +105,8 @@ namespace AdaPET.Controllers
                 try
                 {
                     var existingAnimal = await _context.Animals.AsNoTracking().FirstOrDefaultAsync(a => a.ID == id);
+                    if (existingAnimal == null) return NotFound();
+
                     if (animal.ImageFile != null)
                     {
                         string folder = "images/";
@@ -127,37 +119,41 @@ namespace AdaPET.Controllers
                         }
                         animal.ImgURL = "/" + folder + uniqueFileName;
                     }
-                    else { animal.ImgURL = existingAnimal.ImgURL; }
+                    else
+                    {
+                        animal.ImgURL = existingAnimal.ImgURL;
+                    }
 
                     animal.OwnerId = existingAnimal.OwnerId;
+
+                    // معالجة حالة التبني (Adoption Status)
+                    if (animal.IsAdopted)
+                    {
+                        animal.AdoptedDate = DateTime.Now;
+                    }
+                    else
+                    {
+                        animal.AdoptedDate = null;
+                    }
+
                     _context.Update(animal);
                     await _context.SaveChangesAsync();
+
+                    string status = animal.IsAdopted ? "adopted" : "available for adoption";
+                    TempData["Success"] = $"{animal.Name} has been marked as {status}!";
+
+                    return RedirectToAction(nameof(Details), new { id = animal.ID });
                 }
                 catch (DbUpdateConcurrencyException)
                 {
                     if (!AnimalExists(animal.ID)) return NotFound();
                     throw;
                 }
-<<<<<<< HEAD
-                else
+                catch (Exception ex)
                 {
-                    animal.AdoptedDate = null;
+                    TempData["Error"] = $"Error updating status: {ex.Message}";
+                    return RedirectToAction(nameof(Index));
                 }
-
-                _context.Update(animal);
-                await _context.SaveChangesAsync();
-
-                string status = animal.IsAdopted ? "adopted" : "marked as available for adoption";
-                TempData["Success"] = $"{animal.Name} has been {status}!";
-
-                return RedirectToAction(nameof(Details), new { id = animal.ID });
-            }
-            catch (Exception ex)
-            {
-                TempData["Error"] = $"Error updating adoption status: {ex.Message}";
-=======
->>>>>>> 41f7c55ab5100c221debfba32cd5cecfd2c8f59d
-                return RedirectToAction(nameof(Index));
             }
             return View(animal);
         }

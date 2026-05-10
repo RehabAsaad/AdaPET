@@ -128,15 +128,8 @@
         </form>
     </div>
 
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert alert-success">@TempData["Success"]</div>
-    }
-
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger">@TempData["Error"]</div>
-    }
+    <!-- ✅ تم إزالة عرض رسالة Success من هنا لأنها موجودة في Layout -->
+    @* تم حذف عرض TempData["Success"] و TempData["Error"] لأنها تظهر في Layout *@
 
     <!-- Animals Grid -->
     @if (Model.Any())

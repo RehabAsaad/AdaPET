@@ -119,6 +119,36 @@ namespace AdaPET.Migrations
                     b.ToTable("Doctors");
                 });
 
+            modelBuilder.Entity("AdaPET.Models.Schedule", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DoctorUserId")
+                        .HasColumnType("int");
+
+                    b.Property<TimeSpan>("EndTime")
+                        .HasColumnType("time");
+
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("bit");
+
+                    b.Property<TimeSpan>("StartTime")
+                        .HasColumnType("time");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DoctorUserId");
+
+                    b.ToTable("Schedules");
+                });
+
             modelBuilder.Entity("AdaPET.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -141,7 +171,6 @@ namespace AdaPET.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhotoURL")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserRole")
@@ -188,6 +217,17 @@ namespace AdaPET.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("AdaPET.Models.Schedule", b =>
+                {
+                    b.HasOne("AdaPET.Models.User", "DoctorUser")
+                        .WithMany()
+                        .HasForeignKey("DoctorUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DoctorUser");
                 });
 
             modelBuilder.Entity("AdaPET.Models.Doctor", b =>

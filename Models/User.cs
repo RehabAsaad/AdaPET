@@ -9,34 +9,32 @@ namespace AdaPET.Models
         public int Id { get; set; }
 
         [Required(ErrorMessage = "name required")]
-
         [StringLength(50, MinimumLength = 3, ErrorMessage = "the name should be between 3 and 50 characters")]
-
         public string Name { get; set; }
 
         [Required(ErrorMessage = "email required")]
         [EmailAddress(ErrorMessage = "invalid email format")]
-
         public string Email { get; set; }
 
         [Required(ErrorMessage = "phone required")]
-
         [RegularExpression(@"^01[0125][0-9]{8}$", ErrorMessage = "invalid Egyptian phone number")]
         public string phone { get; set; }
-      
+
+        // الصورة خليناها nullable وسحبنا من فوقها أي شروط خاصة بالباسورد
+        public string? PhotoURL { get; set; }
+
         [Required(ErrorMessage = "password required")]
-
         [DataType(DataType.Password)]
-
-        [MinLength(6, ErrorMessage = "password must be at least 6 characters")]
-        public string? PhotoURL {  get; set; }
+        [MinLength(6, ErrorMessage = "password must be at least 6 characters")] // الـ Attribute ده مكانه الصح هنا
         public string Password { get; set; }
+
         public string UserRole { get; set; } // "User" or "Doctor"
+
         public virtual Doctor Doctor { get; set; }
         public virtual ICollection<Animal> Animals { get; set; }
-        [NotMapped]
-        public string ConfirmPass { get; set; }
 
-    
+        [NotMapped]
+        [Compare("Password", ErrorMessage = "Passwords do not match")] // يفضل تضيفي ده للتأكد من تطابق الباسورد
+        public string ConfirmPass { get; set; }
     }
 }

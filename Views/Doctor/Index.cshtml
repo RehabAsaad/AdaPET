@@ -19,13 +19,22 @@
                                     <h4>Dr. @doctor.DoctorName</h4>
                                     <h6>Specialization: @doctor.Specialization</h6>
                                 </div>
-                                <!-- ✅ VIEW PROFILE BUTTON ADDED HERE -->
-                                <a asp-controller="UserProfile"
-                                   asp-action="Details"
-                                   asp-route-id="@doctor.DoctorId"
-                                   class="btn btn-light btn-sm">
-                                    <i class="fas fa-user-circle"></i> View Profile
-                                </a>
+                                <div>
+                                    <!-- ✅ VIEW PROFILE BUTTON -->
+                                    <a asp-controller="UserProfile"
+                                       asp-action="Details"
+                                       asp-route-id="@doctor.DoctorId"
+                                       class="btn btn-light btn-sm">
+                                        <i class="fas fa-user-circle"></i> View Profile
+                                    </a>
+                                    <!-- ✅ SHOW SCHEDULES BUTTON -->
+                                    <a asp-controller="Schedule"
+                                       asp-action="Index"
+                                       asp-route-doctorId="@doctor.DoctorId"
+                                       class="btn btn-info btn-sm ms-1">
+                                        <i class="fas fa-calendar-alt"></i> Show Schedules
+                                    </a>
+                                </div>
                             </div>
                         </div>
                         <div class="card-body">
@@ -124,6 +133,10 @@
     }
 
     .btn-light:hover {
+        transform: scale(1.02);
+    }
+
+    .btn-info:hover {
         transform: scale(1.02);
     }
 

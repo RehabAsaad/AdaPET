@@ -5,7 +5,7 @@
 namespace AdaPET.Migrations
 {
     /// <inheritdoc />
-    public partial class AddValidation : Migration
+    public partial class MakePhotoNullable : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

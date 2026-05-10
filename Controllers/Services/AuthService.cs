@@ -184,7 +184,9 @@ namespace AdaPET.Services
                     Email = model.Email.Trim().ToLower(),
                     phone = model.Phone.Trim(),
                     Password = model.Password,
-                    UserRole = model.UserRole
+                    UserRole = model.UserRole,
+                    PhotoURL = "/images/default.png" 
+
                 };
 
                 _context.Users.Add(user);
