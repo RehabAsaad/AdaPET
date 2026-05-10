@@ -1,0 +1,124 @@
+﻿@using System.Security.Claims
+@model AdaPET.Models.EditProfileViewModel
+
+@{
+    ViewData["Title"] = "Edit Profile";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">
+                        <i class="fas fa-edit"></i> Edit Profile
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="EditProfile" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="alert alert-danger">
+                                <div asp-validation-summary="All"></div>
+                            </div>
+                        }
+
+                        <!-- Common Fields -->
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label">
+                                <i class="fas fa-user"></i> Full Name
+                            </label>
+                            <input asp-for="Name" class="form-control" />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label">
+                                <i class="fas fa-envelope"></i> Email Address
+                            </label>
+                            <input asp-for="Email" class="form-control" type="email" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Phone" class="form-label">
+                                <i class="fas fa-phone"></i> Phone Number
+                            </label>
+                            <input asp-for="Phone" class="form-control" />
+                            <span asp-validation-for="Phone" class="text-danger"></span>
+                        </div>
+
+                        <!-- Profile Photo -->
+                        <div class="mb-3">
+                            <label asp-for="PhotoFile" class="form-label">
+                                <i class="fas fa-camera"></i> Profile Photo
+                            </label>
+                            <input asp-for="PhotoFile" class="form-control" type="file" accept="image/*" />
+                            @if (!string.IsNullOrEmpty(Model.ExistingPhotoURL))
+                            {
+                                <div class="mt-2">
+                                    <img src="@Model.ExistingPhotoURL" alt="Current photo"
+                                         style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%;" />
+                                    <small class="text-muted ms-2">Current photo</small>
+                                </div>
+                            }
+                            <span asp-validation-for="PhotoFile" class="text-danger"></span>
+                        </div>
+
+                        <!-- Doctor-specific Fields -->
+                        @if (Model.UserRole == "Doctor")
+                        {
+                            <hr />
+                            <h5 class="text-info">
+                                <i class="fas fa-user-md"></i> Doctor Information
+                            </h5>
+
+                            <div class="mb-3">
+                                <label asp-for="Specialization" class="form-label">
+                                    <i class="fas fa-stethoscope"></i> Specialization
+                                </label>
+                                <input asp-for="Specialization" class="form-control"
+                                       placeholder="e.g., Cardiology, Dermatology, Surgery" />
+                                <span asp-validation-for="Specialization" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="ClinicsList" class="form-label">
+                                    <i class="fas fa-hospital"></i> Clinics (separate with commas)
+                                </label>
+                                <textarea asp-for="ClinicsList" class="form-control" rows="3"
+                                          placeholder="e.g., Cairo Vet Clinic, Giza Animal Hospital, Nasr City Pet Care"></textarea>
+                                <small class="text-muted">Enter each clinic name separated by a comma</small>
+                                <span asp-validation-for="ClinicsList" class="text-danger"></span>
+                            </div>
+                        }
+
+                        <!-- Hidden fields -->
+                        <input type="hidden" asp-for="UserId" />
+                        <input type="hidden" asp-for="UserRole" />
+                        <input type="hidden" asp-for="ExistingPhotoURL" />
+
+                        <!-- Buttons -->
+                        <hr />
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Details" asp-route-id="@Model.UserId" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -14,6 +14,8 @@ namespace AdaPET.Models
 
         // Doctor info if user is a doctor
         public string? Specialization { get; set; }
+        public string? ClinicsList { get; set; }  // ✅ Add this
+        public string? PhotoURL { get; set; }     // ✅ Add this
 
         // Animals owned by this user
         public List<Animal> Animals { get; set; } = new List<Animal>();
