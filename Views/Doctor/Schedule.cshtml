@@ -1,0 +1,183 @@
+﻿@model AdaPET.Models.ViewModels.DoctorScheduleViewModel
+
+@{
+    ViewData["Title"] = $"{Model.DoctorName} - Schedules";
+}
+
+<div class="container">
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h3>📅 @Model.DoctorName - Appointment Schedules</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>📞 Phone:</strong> @Model.DoctorPhone</p>
+                    <p><strong>⚕️ Specialization:</strong> @Model.Specialization</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <a href="tel:@Model.DoctorPhone" class="btn btn-success btn-lg">
+                        📞 Call Now
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.IsDoctor)
+    {
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5>➕ Add New Schedule</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="AddSchedule" method="post">
+                    <input type="hidden" name="doctorId" value="@Model.DoctorId" />
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label>Date</label>
+                            <input type="date" name="date" class="form-control" required />
+                        </div>
+                        <div class="col-md-3">
+                            <label>Start Time</label>
+                            <input type="time" name="startTime" class="form-control" required />
+                        </div>
+                        <div class="col-md-3">
+                            <label>End Time</label>
+                            <input type="time" name="endTime" class="form-control" required />
+                        </div>
+                        <div class="col-md-3">
+                            <label>&nbsp;</label>
+                            <button type="submit" class="btn btn-primary form-control">➕ Add</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+
+    <div class="card">
+        <div class="card-header bg-secondary text-white">
+            <h5>📋 Available Schedules</h5>
+        </div>
+        <div class="card-body">
+            @if (Model.Schedules.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Start Time</th>
+                                <th>End Time</th>
+                                <th>Status</th>
+                                @if (Model.IsDoctor)
+                                {
+                                    <th>Actions</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var schedule in Model.Schedules.OrderBy(s => s.Date).ThenBy(s => s.StartTime))
+                            {
+                                <tr>
+                                    <td>@schedule.Date.ToString("yyyy-MM-dd")</td>
+                                    <td>@schedule.StartTime.ToString(@"hh\:mm")</td>
+                                    <td>@schedule.EndTime.ToString(@"hh\:mm")</td>
+                                    <td>
+                                        @if (schedule.IsAvailable)
+                                        {
+                                            <span class="badge bg-success">Available</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">Booked</span>
+                                        }
+                                    </td>
+                                    @if (Model.IsDoctor)
+                                    {
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editModal@(schedule.Id)">
+                                                ✏️ Edit
+                                            </button>
+                                            <form asp-action="DeleteSchedule" method="post" style="display:inline">
+                                                <input type="hidden" name="scheduleId" value="@schedule.Id" />
+                                                <input type="hidden" name="doctorId" value="@Model.DoctorId" />
+                                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this schedule?')">
+                                                    🗑️ Delete
+                                                </button>
+                                            </form>
+
+                                            <!-- Edit Modal -->
+                                            <div class="modal fade" id="editModal@(schedule.Id)" tabindex="-1">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <form asp-action="EditSchedule" method="post">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title">Edit Schedule</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <input type="hidden" name="scheduleId" value="@schedule.Id" />
+                                                                <input type="hidden" name="doctorId" value="@Model.DoctorId" />
+                                                                <div class="mb-2">
+                                                                    <label>Date</label>
+                                                                    <input type="date" name="date" class="form-control" value="@schedule.Date.ToString("yyyy-MM-dd")" required />
+                                                                </div>
+                                                                <div class="mb-2">
+                                                                    <label>Start Time</label>
+                                                                    <input type="time" name="startTime" class="form-control" value="@schedule.StartTime.ToString(@"hh\:mm")" required />
+                                                                </div>
+                                                                <div class="mb-2">
+                                                                    <label>End Time</label>
+                                                                    <input type="time" name="endTime" class="form-control" value="@schedule.EndTime.ToString(@"hh\:mm")" required />
+                                                                </div>
+                                                                <div class="mb-2">
+                                                                    <label>Status</label>
+                                                                    <select name="isAvailable" class="form-control">
+                                                                        @if (schedule.IsAvailable)
+                                                                        {
+                                                                            <option value="true" selected>Available</option>
+                                                                            <option value="false">Booked</option>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <option value="true">Available</option>
+                                                                            <option value="false" selected>Booked</option>
+                                                                        }
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info text-center">
+                    <h5>No schedules available</h5>
+                    @if (Model.IsDoctor)
+                    {
+                        <p>Add your first schedule using the form above ⬆️</p>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a asp-controller="Doctor" asp-action="Index" class="btn btn-secondary">← Back to Doctors</a>
+    </div>
+</div>
