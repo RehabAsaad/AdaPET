@@ -163,13 +163,20 @@ namespace AdaPET.Controllers
             return View(animal);
         }
 
+
+        private bool AnimalExists(int id)
+        {
+            return _context.Animals.Any(e => e.ID == id);
+        }
+
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("ID,Name,Description,Age,Type,ImgURL,OwnerId,IsAdopted,AdoptedDate")] Animal animal, IFormFile? ImageFile)
         {
             if (id != animal.ID) return NotFound();
 
-            // بنشيل أي أخطاء متعلقة بالصورة والوصف عشان نضمن إن ModelState يكون Valid
+            
             ModelState.Remove(nameof(ImageFile));
             ModelState.Remove(nameof(animal.Description));
 
@@ -177,11 +184,11 @@ namespace AdaPET.Controllers
             {
                 try
                 {
-                    // سحب البيانات القديمة بدون تتبع عشان نعرف الـ ImgURL الأصلي
+                    
                     var existingAnimal = await _context.Animals.AsNoTracking().FirstOrDefaultAsync(a => a.ID == id);
                     if (existingAnimal == null) return NotFound();
 
-                    // التعامل مع الصورة (استخدمنا الباراميتر المنفصل ImageFile)
+                    
                     if (ImageFile != null && ImageFile.Length > 0)
                     {
                         string folder = "images/";
@@ -234,18 +241,8 @@ namespace AdaPET.Controllers
             return View(animal);
         }
 
-        // 7. تفاصيل الحيوان (Details)
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null) return NotFound();
-            var animal = await _context.Animals.FirstOrDefaultAsync(a => a.ID == id);
-            if (animal == null) return NotFound();
-            return View(animal);
-        }
+       
 
-        private bool AnimalExists(int id)
-        {
-            return _context.Animals.Any(e => e.ID == id);
-        }
+        
     }
 }
