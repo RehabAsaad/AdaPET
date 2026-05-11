@@ -211,24 +211,27 @@
     }
     else
     {
-        @* الجزء الخاص في حال عدم وجود نتائج بحث *@
         <div class="text-center py-5">
-            <div class="mb-4">
-                <i class="fas fa-search fa-5x text-muted opacity-50"></i>
-            </div>
-            <h2 class="fw-bold text-dark">No pets found!</h2>
-            @if (!string.IsNullOrEmpty(currentFilter))
+            @if (ViewBag.SearchPerformed == true)
             {
+                <div class="mb-4">
+                    <i class="fas fa-search fa-5x text-muted opacity-50"></i>
+                </div>
+                <h2 class="fw-bold text-dark">No pets found!</h2>
                 <p class="text-muted mb-4">We couldn't find any animals matching "@currentFilter".</p>
+                <a asp-action="Index" class="btn btn-warning btn-lg px-5 fw-bold shadow-sm" style="border-radius: 30px;">
+                    <i class="fas fa-redo me-2"></i> View All Animals
+                </a>
             }
             else
             {
-                <p class="text-muted mb-4">The gallery is currently empty.</p>
+                @* تم حذف زرار Add First Animal من هنا *@
+                <div class="mb-4">
+                    <i class="fas fa-paw fa-5x text-muted opacity-50"></i>
+                </div>
+                <h2 class="fw-bold text-dark">Your Gallery is Empty</h2>
+                <p class="text-muted mb-0">There are no animals listed at the moment.</p>
             }
-            
-            <a asp-action="Index" class="btn btn-warning btn-lg px-5 fw-bold shadow-sm" style="border-radius: 30px;">
-                <i class="fas fa-redo me-2"></i> View All Animals
-            </a>
         </div>
     }
 </div>
