@@ -44,14 +44,25 @@
 
                         <div class="mb-3">
                             <label asp-for="Type" class="form-label fw-bold">Animal Type *</label>
-                            @* شيلنا الـ list عشان اليوزر يكتب النوع يدوي *@
-                            <input asp-for="Type" class="form-control" placeholder="Enter animal type (e.g., Dog, Cat, Bird)" required />
-                            <span asp-validation-for="Type" class="text-danger"></span>
+                            <select asp-for="Type" class="form-select shadow-sm" required>
+                                <option value="">-- Choose Type --</option>
+                                <option value="Dog">Dog</option>
+                                <option value="Cat">Cat</option>
+                                <option value="Bird">Bird</option>
+                                <option value="Rabbit">Rabbit</option>
+                                <option value="Hamster">Hamster</option>
+                                <option value="Turtle">Turtle</option>
+                                <option value="Parrot">Parrot</option>
+                                <option value="Fish">Fish</option>
+                                <option value="Horse">Horse</option>
+                                <option value="Monkey">Monkey</option>
+                            </select>
+                            <span asp-validation-for="Type" class="text-danger small"></span>
                         </div>
 
                         <div class="mb-3">
                             <label asp-for="Age" class="form-label fw-bold">Age (Years) *</label>
-                            <input asp-for="Age" class="form-control" type="number" min="0" step="0.5" required />
+                            <input asp-for="Age" class="form-control" type="number" min="0" step="1" required />
                             <span asp-validation-for="Age" class="text-danger"></span>
                         </div>
 

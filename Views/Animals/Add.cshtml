@@ -24,9 +24,21 @@
                                 <span asp-validation-for="Name" class="text-danger small"></span>
                             </div>
 
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="Type" class="form-label fw-bold small">Animal Type</label>
-                                <input asp-for="Type" class="form-control" placeholder="e.g. Dog" />
+                            <div class="mb-3">
+                                <label asp-for="Type" class="form-label fw-bold">Animal Type *</label>
+                                <select asp-for="Type" class="form-select shadow-sm" required>
+                                    <option value="">-- Choose Type --</option>
+                                    <option value="Dog">Dog</option>
+                                    <option value="Cat">Cat</option>
+                                    <option value="Bird">Bird</option>
+                                    <option value="Rabbit">Rabbit</option>
+                                    <option value="Hamster">Hamster</option>
+                                    <option value="Turtle">Turtle</option>
+                                    <option value="Parrot">Parrot</option>
+                                    <option value="Fish">Fish</option>
+                                    <option value="Horse">Horse</option>
+                                    <option value="Monkey">Monkey</option>
+                                </select>
                                 <span asp-validation-for="Type" class="text-danger small"></span>
                             </div>
                         </div>

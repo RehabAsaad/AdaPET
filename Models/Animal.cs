@@ -9,6 +9,7 @@ namespace AdaPET.Models
 
         [Required(ErrorMessage = "Please enter the animal's name")]
         [StringLength(50, MinimumLength = 2, ErrorMessage = "Name must be between 2 and 50 characters")]
+        [RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "Name must contain letters only.")]
         public string Name { get; set; }
 
         [Required(ErrorMessage = "Please provide a description")]
@@ -22,6 +23,8 @@ namespace AdaPET.Models
         public bool IsAdopted { get; set; }
 
         [Required(ErrorMessage = "Please specify the animal type (e.g., Dog, Cat)")]
+        [RegularExpression(@"^(Dog|Cat|Bird|Rabbit|Hamster|Turtle|Parrot|Fish|Horse|Monkey)$",
+        ErrorMessage = "Invalid animal type selected.")]
         public string Type { get; set; }
 
         
