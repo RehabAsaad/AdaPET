@@ -4,6 +4,7 @@ using AdaPET.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace AdaPET.Controllers
@@ -11,10 +12,12 @@ namespace AdaPET.Controllers
     public class AccountController : Controller
     {
         private readonly IAuthService _authService;
+        
 
         public AccountController(IAuthService authService)
         {
             _authService = authService;
+            
         }
 
         [HttpGet]
@@ -24,28 +27,28 @@ namespace AdaPET.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
             if (ModelState.IsValid)
             {
+                
                 var result = await _authService.RegisterAsync(model);
 
                 if (result.Success && result.User != null)
                 {
+
                     await SignInUser(result.User, false);
                     HttpContext.Session.SetInt32("UserId", result.User.Id);
-                    TempData["Success"] = "SignIn Success!";
-                    // return RedirectToAction("Index", "Animals");
-                    return RedirectToAction("Login", "Account");
+                    TempData["Success"] = "Registration Success!";
+                    return RedirectToAction("Index", "Animals");
                 }
 
                 foreach (var error in result.Errors)
                 {
                     ModelState.AddModelError("", error);
                 }
-                return View(model);
             }
-
             return View(model);
         }
 

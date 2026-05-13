@@ -36,6 +36,9 @@ namespace AdaPET.Models.ViewModels
     {
         public string? Name { get; set; }
         public string? Address { get; set; }
+        [Required(ErrorMessage = "Clinic phone is required")] 
+        [RegularExpression(@"^01[0125][0-9]{8}$", ErrorMessage = "Invalid phone")]
+        public string? Phone { get; set; }
     }
 }
 

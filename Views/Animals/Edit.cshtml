@@ -18,7 +18,7 @@
                     <form asp-action="Edit" method="post" enctype="multipart/form-data">
                         @Html.AntiForgeryToken()
 
-                        @* الحقول المخفية لضمان عدم فقدان البيانات الأساسية *@
+                       
                         <input type="hidden" asp-for="ID" />
                         <input type="hidden" asp-for="OwnerId" />
                         <input type="hidden" asp-for="ImgURL" />
@@ -33,7 +33,7 @@
                             </div>
                         }
 
-                        @* ملخص الأخطاء *@
+                        
                         <div asp-validation-summary="All" class="text-danger"></div>
 
                         <div class="mb-3">

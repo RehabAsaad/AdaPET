@@ -81,8 +81,6 @@ namespace AdaPET.Controllers
             return View(animal);
         }
 
-        // 3. ميثود تبديل حالة التبني (Toggle Status)
-        // دي اللي بتخليكي كمالكة تغيري من Mark as Adopted لـ Make Available والعكس
         public async Task<IActionResult> ToggleAdoptionStatus(int id)
         {
             var animal = await _context.Animals.FindAsync(id);
@@ -109,13 +107,13 @@ namespace AdaPET.Controllers
             _context.Update(animal);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(Index)); // هيرجع للصفحة والعملية هتتم بس بدون الشريطة الخضراء
+            return RedirectToAction(nameof(Index)); 
         }
 
         // 4. ميثود التواصل مع المالك (Contact Owner)
         public async Task<IActionResult> ContactOwner(int id)
         {
-            // لازم نستخدم Include عشان نجيب بيانات المالك (Owner) مع الحيوان
+            
             var animal = await _context.Animals
                 .Include(a => a.Owner)
                 .FirstOrDefaultAsync(a => a.ID == id);
@@ -138,7 +136,7 @@ namespace AdaPET.Controllers
 
             if (animal != null)
             {
-                // التأكد إن اللي بيمسح هو صاحب الحيوان
+                
                 if (userId == animal.OwnerId.ToString())
                 {
                     _context.Animals.Remove(animal);
@@ -204,16 +202,16 @@ namespace AdaPET.Controllers
                             await ImageFile.CopyToAsync(fileStream);
                         }
 
-                        // تحديث المسار بالصورة الجديدة
+                        
                         animal.ImgURL = "/" + folder + uniqueFileName;
                     }
                     else
                     {
-                        // لو مرفعش صورة، نرجع القيمة اللي كانت موجودة أصلاً
+                        
                         animal.ImgURL = existingAnimal.ImgURL;
                     }
 
-                    // الحفاظ على البيانات الأساسية
+                    
                     animal.OwnerId = existingAnimal.OwnerId;
                     if (animal.IsAdopted)
                     {
@@ -237,7 +235,7 @@ namespace AdaPET.Controllers
                 }
             }
 
-            // لو فشل، بنرجع الفيو وهتظهر الأخطاء (لو فيه)
+            
             return View(animal);
         }
 

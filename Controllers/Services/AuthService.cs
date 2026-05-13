@@ -83,6 +83,7 @@ namespace AdaPET.Services
                 {
                     errors.Add("Password_Length: Password cannot exceed 100 characters");
                 }
+                
 
                 // التحقق من تطابق كلمة المرور
                 if (model.Password != model.ConfirmPassword)
@@ -215,7 +216,7 @@ namespace AdaPET.Services
                                     Name = clinicVM.Name.Trim(),
                                     location = clinicVM.Address.Trim(),
                                     DoctorId = doctor.UserId,
-                                    Phone = user.phone
+                                    Phone = clinicVM.Phone?? user.phone
                                 };
                                 _context.Clinics.Add(clinic);
                             }

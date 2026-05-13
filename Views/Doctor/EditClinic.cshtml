@@ -1,32 +1,21 @@
 ﻿@model AdaPET.Models.Clinic
 
 @{
-    ViewData["Title"] = $"Edit Clinic - {Model.Name}";
+    ViewData["Title"] = "Add New Clinic";
 }
 
 <div class="container mt-4">
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card shadow-lg">
-                <div class="card-header bg-warning text-white">
+                <div class="card-header bg-success text-white">
                     <h3 class="mb-0">
-                        <i class="fas fa-edit"></i> Edit Clinic: @Model.Name
+                        <i class="fas fa-plus-circle"></i> Add New Clinic
                     </h3>
                 </div>
                 <div class="card-body">
-                    @if (TempData["Error"] != null)
-                    {
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    }
-
-                    <form asp-action="EditClinic" method="post">
+                    <form asp-action="CreateClinic" method="post">
                         @Html.AntiForgeryToken()
-
-                        <input type="hidden" asp-for="Id" />
-                        <input type="hidden" asp-for="DoctorId" />
 
                         <!-- Basic Information Section -->
                         <div class="card mb-3">
@@ -65,71 +54,17 @@
                                     <textarea asp-for="Description" class="form-control" rows="4"
                                               placeholder="Describe your clinic, services offered, facilities, etc..."></textarea>
                                     <small class="text-muted">Tell patients about your clinic, services, and what makes it special.</small>
-                                    <span asp-validation-for="Description" class="text-danger"></span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Schedule Section -->
-                        <div class="card mb-3">
-                            <div class="card-header bg-primary text-white">
-                                <h5 class="mb-0"><i class="fas fa-calendar-alt"></i> Working Hours & Schedule</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="mb-3">
-                                    <label asp-for="Schedule" class="form-label fw-bold">Schedule / Working Hours</label>
-                                    <textarea asp-for="Schedule" class="form-control" rows="10"
-                                              placeholder="Example:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📅 WORKING HOURS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Monday     : 9:00 AM - 5:00 PM
-Tuesday    : 9:00 AM - 5:00 PM
-Wednesday  : 9:00 AM - 5:00 PM
-Thursday   : 9:00 AM - 5:00 PM
-Friday     : 9:00 AM - 1:00 PM
-Saturday   : Closed
-Sunday     : Closed
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🍽️ LUNCH BREAK
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-1:00 PM - 2:00 PM
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📞 APPOINTMENT INFO
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Call to schedule appointments
-Emergency cases welcome
-Walk-ins available during working hours"></textarea>
-                                    <small class="text-muted">
-                                        <i class="fas fa-info-circle"></i>
-                                        Enter your clinic's working hours. You can use any format. Use the example above as a template.
-                                    </small>
-                                    <span asp-validation-for="Schedule" class="text-danger"></span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="alert alert-info">
-                            <i class="fas fa-lightbulb"></i>
-                            <strong>Tips for a good schedule:</strong>
-                            <ul class="mb-0 mt-2">
-                                <li>Include daily working hours</li>
-                                <li>Mention lunch/closing breaks</li>
-                                <li>Add appointment requirements</li>
-                                <li>Include emergency contact info</li>
-                                <li>List holiday closures if any</li>
-                            </ul>
-                        </div>
-
+                     
                         <div class="d-flex justify-content-between">
                             <a asp-action="Index" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left"></i> Cancel
                             </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Save Changes
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Create Clinic
                             </button>
                         </div>
                     </form>
@@ -138,25 +73,3 @@ Walk-ins available during working hours"></textarea>
         </div>
     </div>
 </div>
-
-<style>
-    textarea {
-        font-family: monospace;
-        font-size: 14px;
-        line-height: 1.6;
-    }
-
-    .card {
-        transition: transform 0.2s;
-    }
-
-        .card:hover {
-            transform: translateY(-2px);
-        }
-</style>
-
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-}
