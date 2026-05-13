@@ -40,7 +40,15 @@
                         <div class="card-body">
                             @if (doctor.Clinics.Any())
                             {
-                                <h5>Clinics:</h5>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5>Clinics:</h5>
+                                    @if (Model.CurrentUserRole == "Doctor" && Model.CurrentUserId == doctor.DoctorId)
+                                    {
+                                        <a asp-action="CreateClinic" class="btn btn-success btn-sm">
+                                            <i class="fas fa-plus"></i> Add New Clinic
+                                        </a>
+                                    }
+                                </div>
                                 @foreach (var clinic in doctor.Clinics)
                                 {
                                     <div class="card mt-2">
@@ -83,7 +91,15 @@
                             }
                             else
                             {
-                                <p class="text-muted">No clinics assigned yet.</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <p class="text-muted mb-0">No clinics assigned yet.</p>
+                                    @if (Model.CurrentUserRole == "Doctor" && Model.CurrentUserId == doctor.DoctorId)
+                                    {
+                                        <a asp-action="CreateClinic" class="btn btn-success btn-sm">
+                                            <i class="fas fa-plus"></i> Add New Clinic
+                                        </a>
+                                    }
+                                </div>
                             }
                         </div>
                     </div>
@@ -137,6 +153,10 @@
     }
 
     .btn-info:hover {
+        transform: scale(1.02);
+    }
+
+    .btn-success:hover {
         transform: scale(1.02);
     }
 

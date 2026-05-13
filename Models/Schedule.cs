@@ -9,7 +9,10 @@ namespace AdaPET.Models
         public int Id { get; set; }
 
         [Required]
-        public int DoctorId { get; set; }  // ✅ ده هو UserId من جدول Doctor
+        public int DoctorId { get; set; }
+
+        [Required]
+        public int ClinicId { get; set; }  // ✅ أضيفي السطر ده
 
         [Required]
         public DateTime Date { get; set; }
@@ -20,7 +23,6 @@ namespace AdaPET.Models
         [Required]
         public TimeSpan EndTime { get; set; }
 
-        // ✅ خاصية الحالة (Available, Booked, Cancelled)
         private string _status = "Available";
         public string Status
         {
@@ -28,7 +30,6 @@ namespace AdaPET.Models
             set => _status = value;
         }
 
-        // ✅ خاصية IsAvailable (للتكامل مع الكود القديم)
         [NotMapped]
         public bool IsAvailable
         {
@@ -36,10 +37,12 @@ namespace AdaPET.Models
             set => Status = value ? "Available" : "Booked";
         }
 
-        // ✅ العلاقة مع جدول Doctor
         [ForeignKey("DoctorId")]
         public virtual Doctor? Doctor { get; set; }
-        public virtual ICollection<TimeSlot> TimeSlots { get; set; } = new List<TimeSlot>();
 
+        [ForeignKey("ClinicId")]
+        public virtual Clinic? Clinic { get; set; }  // ✅ أضيفي السطر ده
+
+        public virtual ICollection<TimeSlot> TimeSlots { get; set; } = new List<TimeSlot>();
     }
 }

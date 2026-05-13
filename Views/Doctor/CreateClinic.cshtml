@@ -1,0 +1,100 @@
+﻿@model AdaPET.Models.Clinic
+
+@{
+    ViewData["Title"] = "Add New Clinic";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-plus-circle"></i> Add New Clinic
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="CreateClinic" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <!-- Basic Information Section -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Basic Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label asp-for="Name" class="form-label fw-bold">Clinic Name</label>
+                                    <input asp-for="Name" class="form-control" required />
+                                    <span asp-validation-for="Name" class="text-danger"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="location" class="form-label fw-bold">Location</label>
+                                    <input asp-for="location" class="form-control" required />
+                                    <span asp-validation-for="location" class="text-danger"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Phone" class="form-label fw-bold">Phone Number</label>
+                                    <input asp-for="Phone" class="form-control" required />
+                                    <span asp-validation-for="Phone" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Description Section -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0"><i class="fas fa-align-left"></i> Clinic Description</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label asp-for="Description" class="form-label fw-bold">Description</label>
+                                    <textarea asp-for="Description" class="form-control" rows="4"
+                                              placeholder="Describe your clinic, services offered, facilities, etc..."></textarea>
+                                    <small class="text-muted">Tell patients about your clinic, services, and what makes it special.</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Schedule Section -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0"><i class="fas fa-calendar-alt"></i> Working Hours & Schedule</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label asp-for="Schedule" class="form-label fw-bold">Schedule / Working Hours</label>
+                                    <textarea asp-for="Schedule" class="form-control" rows="10"
+                                              placeholder="Example:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📅 WORKING HOURS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Monday     : 9:00 AM - 5:00 PM
+Tuesday    : 9:00 AM - 5:00 PM
+Wednesday  : 9:00 AM - 5:00 PM
+Thursday   : 9:00 AM - 5:00 PM
+Friday     : 9:00 AM - 1:00 PM
+Saturday   : Closed
+Sunday     : Closed"></textarea>
+                                    <small class="text-muted">Enter your clinic's working hours. You can use any format.</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Create Clinic
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
