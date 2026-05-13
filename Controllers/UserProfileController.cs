@@ -296,7 +296,7 @@ namespace AdaPET.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteAccount()
         {
-            // Get logged-in user ID
+            // 1. التحقق من المستخدم المسجل
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
             {
@@ -304,11 +304,11 @@ namespace AdaPET.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            // Get user with all related data
+            // 2. جلب بيانات المستخدم وكل ما يتعلق به من جداول
             var user = await _context.Users
-                .Include(u => u.Animals)      // حيوانات المستخدم
+                .Include(u => u.Animals)
                 .Include(u => u.Doctor)
-                    .ThenInclude(d => d.Clinics)  // عيادات الدكتور
+                    .ThenInclude(d => d.Clinics)
                 .FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null)
@@ -318,70 +318,93 @@ namespace AdaPET.Controllers
 
             try
             {
-                // 1. Delete profile photo if exists
+                // --- أولاً: مسح الصور من السيرفر ---
                 if (!string.IsNullOrEmpty(user.PhotoURL))
                 {
-                    string photoPath = Path.Combine(_webHostEnvironment.WebRootPath,
-                        "images", Path.GetFileName(user.PhotoURL));
-                    if (System.IO.File.Exists(photoPath))
-                    {
-                        System.IO.File.Delete(photoPath);
-                    }
+                    string photoPath = Path.Combine(_webHostEnvironment.WebRootPath, "images", Path.GetFileName(user.PhotoURL));
+                    if (System.IO.File.Exists(photoPath)) System.IO.File.Delete(photoPath);
                 }
 
-                // 2. Delete all animal photos
-                if (user.Animals != null && user.Animals.Any())
+                if (user.Animals != null)
                 {
                     foreach (var animal in user.Animals)
                     {
                         if (!string.IsNullOrEmpty(animal.ImgURL))
                         {
-                            string animalPhotoPath = Path.Combine(_webHostEnvironment.WebRootPath,
-                                "images", Path.GetFileName(animal.ImgURL));
-                            if (System.IO.File.Exists(animalPhotoPath))
-                            {
-                                System.IO.File.Delete(animalPhotoPath);
-                            }
+                            string animalPhotoPath = Path.Combine(_webHostEnvironment.WebRootPath, "images", Path.GetFileName(animal.ImgURL));
+                            if (System.IO.File.Exists(animalPhotoPath)) System.IO.File.Delete(animalPhotoPath);
                         }
                     }
                 }
 
-                // 3. If Doctor, delete clinics first (due to foreign key constraint)
+                // --- ثانياً: مسح بيانات الدكتور (الترتيب هنا هو السر) ---
                 if (user.UserRole == "Doctor" && user.Doctor != null)
                 {
+                    // أ. مسح الفترات الزمنية (TimeSlots) أولاً
+                    var scheduleIds = await _context.Schedules
+                        .Where(s => s.DoctorId == user.Id)
+                        .Select(s => s.Id)
+                        .ToListAsync();
+
+                    if (scheduleIds.Any())
+                    {
+                        var timeSlots = await _context.TimeSlots
+                            .Where(ts => scheduleIds.Contains(ts.ScheduleId))
+                            .ToListAsync();
+
+                        if (timeSlots.Any())
+                        {
+                            _context.TimeSlots.RemoveRange(timeSlots);
+                        }
+
+                        // ب. مسح المواعيد (Schedules)
+                        var schedules = await _context.Schedules
+                            .Where(s => scheduleIds.Contains(s.Id))
+                            .ToListAsync();
+
+                        _context.Schedules.RemoveRange(schedules);
+                    }
+
+                    // ج. مسح العيادات
                     if (user.Doctor.Clinics != null && user.Doctor.Clinics.Any())
                     {
                         _context.Clinics.RemoveRange(user.Doctor.Clinics);
                     }
+
+                    // د. مسح سجل الدكتور
                     _context.Doctors.Remove(user.Doctor);
+
+                    // تنفيذ المسح الوسيط لفك الارتباط
+                    await _context.SaveChangesAsync();
                 }
 
-                // 4. Delete all animals
+                // --- ثالثاً: مسح الحيوانات ---
                 if (user.Animals != null && user.Animals.Any())
                 {
                     _context.Animals.RemoveRange(user.Animals);
+                    await _context.SaveChangesAsync();
                 }
 
-                // 5. Finally delete the user
+                // --- رابعاً: مسح اليوزر النهائي ---
                 _context.Users.Remove(user);
-
-                // Save all changes
                 await _context.SaveChangesAsync();
 
-                // 6. Sign out the user
+                // --- خامساً: تسجيل الخروج ---
                 await HttpContext.SignOutAsync();
                 HttpContext.Session.Clear();
-
                 TempData.Clear();
+
                 return RedirectToAction("Index", "Home", new { deleted = "success" });
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "An error occurred while deleting your account. Please try again.";
-                Console.WriteLine($"Error deleting account: {ex.Message}");
+                var detailedError = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                Console.WriteLine($"Full Error: {detailedError}");
+                TempData["Error"] = "An error occurred: " + detailedError;
                 return RedirectToAction(nameof(Details), new { id = userId });
             }
         }
+
 
         private bool IsAuthenticated()
         {
