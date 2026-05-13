@@ -44,7 +44,7 @@ namespace AdaPET.Controllers
                         Description = c.Description,
                         Location = c.location,
                         Phone = c.Phone,
-                        Schedule = c.Schedule,  // ✅ ADD THIS LINE
+                        Schedule = c.Schedule,
                         CanEdit = currentUserRole == "Doctor" && currentUserId == d.UserId.ToString()
                     }).ToList()
                 })
@@ -60,6 +60,66 @@ namespace AdaPET.Controllers
             return View(viewModel);
         }
 
+        // ✅ إضافة عيادة جديدة (GET)
+        [Authorize(Roles = "Doctor")]
+        public async Task<IActionResult> CreateClinic()
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(currentUserId) || !int.TryParse(currentUserId, out int userId))
+            {
+                return Unauthorized();
+            }
+
+            var clinic = new Clinic
+            {
+                DoctorId = userId,
+                Name = "",
+                location = "",
+                Phone = "",
+                Description = "",
+                Schedule = ""
+            };
+
+            return View(clinic);
+        }
+
+        // ✅ إضافة عيادة جديدة (POST)
+        [HttpPost]
+        [Authorize(Roles = "Doctor")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateClinic([Bind("Name,Description,location,Phone,Schedule")] Clinic clinic)
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(currentUserId) || !int.TryParse(currentUserId, out int userId))
+            {
+                return Unauthorized();
+            }
+
+            clinic.DoctorId = userId;
+
+            ModelState.Remove("Doctor");
+            ModelState.Remove("Id");
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Clinics.Add(clinic);
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = "Clinic added successfully!";
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception ex)
+                {
+                    TempData["Error"] = $"Error saving clinic: {ex.Message}";
+                    return View(clinic);
+                }
+            }
+
+            return View(clinic);
+        }
+
+        // ✅ تعديل عيادة (GET)
         [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> EditClinic(int id)
         {
@@ -88,6 +148,7 @@ namespace AdaPET.Controllers
             return View(clinic);
         }
 
+        // ✅ تعديل عيادة (POST) - معدل للحفاظ على البيانات
         [HttpPost]
         [Authorize(Roles = "Doctor")]
         [ValidateAntiForgeryToken]
@@ -119,36 +180,70 @@ namespace AdaPET.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            ModelState.Remove("Doctor");
+            // ✅ تحديث جميع الحقول مع الحفاظ على البيانات الموجودة
+            existingClinic.Name = string.IsNullOrEmpty(clinic.Name) ? existingClinic.Name : clinic.Name;
+            existingClinic.Description = clinic.Description ?? existingClinic.Description;
+            existingClinic.location = string.IsNullOrEmpty(clinic.location) ? existingClinic.location : clinic.location;
+            existingClinic.Phone = string.IsNullOrEmpty(clinic.Phone) ? existingClinic.Phone : clinic.Phone;
+            existingClinic.Schedule = clinic.Schedule ?? existingClinic.Schedule;
 
-            if (ModelState.IsValid)
+            try
             {
-                try
-                {
-                    existingClinic.Name = clinic.Name;
-                    existingClinic.Description = clinic.Description ?? string.Empty;
-                    existingClinic.location = clinic.location;
-                    existingClinic.Phone = clinic.Phone;
-                    existingClinic.Schedule = clinic.Schedule;  // ✅ ADD THIS LINE
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Clinic information updated successfully!";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!ClinicExists(clinic.Id))
+                    return NotFound();
+                throw;
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error saving changes: {ex.Message}";
+                return View(clinic);
+            }
+        }
 
-                    await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = "Clinic information updated successfully!";
-                    return RedirectToAction(nameof(Index));
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ClinicExists(clinic.Id))
-                        return NotFound();
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    TempData["Error"] = $"Error saving changes: {ex.Message}";
-                    return View(clinic);
-                }
+        // ✅ حذف عيادة
+        [HttpPost]
+        [Authorize(Roles = "Doctor")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteClinic(int id)
+        {
+            var clinic = await _context.Clinics.FindAsync(id);
+
+            if (clinic == null)
+            {
+                TempData["Error"] = "Clinic not found.";
+                return RedirectToAction(nameof(Index));
             }
 
-            return View(clinic);
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(currentUserId) || !int.TryParse(currentUserId, out int userId))
+            {
+                return Unauthorized();
+            }
+
+            if (clinic.DoctorId != userId)
+            {
+                TempData["Error"] = "You can only delete your own clinics.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            try
+            {
+                _context.Clinics.Remove(clinic);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Clinic deleted successfully!";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error deleting clinic: {ex.Message}";
+            }
+
+            return RedirectToAction(nameof(Index));
         }
 
         private bool ClinicExists(int id)

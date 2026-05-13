@@ -35,6 +35,23 @@
                     <input type="hidden" name="doctorId" value="@Model.DoctorId" />
                     <div class="row">
                         <div class="col-md-3">
+                            <label>Clinic</label>
+                            <select name="clinicId" class="form-control" required>
+                                <option value="">-- Select Clinic --</option>
+                                @if (Model.Clinics != null && Model.Clinics.Any())
+                                {
+                                    @foreach (var clinic in Model.Clinics)
+                                    {
+                                        <option value="@clinic.Id">@clinic.Name - @clinic.location</option>
+                                    }
+                                }
+                                else
+                                {
+                                    <option value="" disabled>No clinics available. Please add a clinic first.</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-3">
                             <label>Date</label>
                             <input type="date" name="date" class="form-control" required />
                         </div>
@@ -46,9 +63,8 @@
                             <label>End Time</label>
                             <input type="time" name="endTime" class="form-control" required />
                         </div>
-                        <div class="col-md-3">
-                            <label>&nbsp;</label>
-                            <button type="submit" class="btn btn-primary form-control">➕ Add</button>
+                        <div class="col-md-12 mt-2">
+                            <button type="submit" class="btn btn-primary">➕ Add Schedule</button>
                         </div>
                     </div>
                 </form>
@@ -67,10 +83,44 @@
                 {
                     <div class="card mb-3">
                         <div class="card-header bg-light">
-                            <strong>📅 @schedule.Date.ToString("dddd, MMMM dd, yyyy")</strong>
-                            <span class="badge bg-secondary ms-2">@schedule.StartTime - @schedule.EndTime</span>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>📅 @schedule.Date.ToString("dddd, MMMM dd, yyyy")</strong>
+                                    <span class="badge bg-secondary ms-2">@schedule.StartTime - @schedule.EndTime</span>
+                                </div>
+                                <div>
+                                    @if (!string.IsNullOrEmpty(schedule.ClinicName))
+                                    {
+                                        <span class="badge bg-primary">
+                                            🏥 @schedule.ClinicName
+                                        </span>
+                                    }
+                                </div>
+                            </div>
                         </div>
                         <div class="card-body">
+                            @if (!string.IsNullOrEmpty(schedule.ClinicLocation) || !string.IsNullOrEmpty(schedule.ClinicPhone))
+                            {
+                                <div class="alert alert-light mb-3">
+                                    <small>
+                                        @if (!string.IsNullOrEmpty(schedule.ClinicLocation))
+                                        {
+                                            <strong>📍 Location:</strong>
+                                            @schedule.ClinicLocation
+                                        }
+                                        @if (!string.IsNullOrEmpty(schedule.ClinicPhone))
+                                        {
+                                            if (!string.IsNullOrEmpty(schedule.ClinicLocation))
+                                            {
+                                                <text> | </text>
+                                            }
+                                            <strong>📞 Phone:</strong>
+                                            @schedule.ClinicPhone
+                                        }
+                                    </small>
+                                </div>
+                            }
+
                             @if (schedule.TimeSlots != null && schedule.TimeSlots.Any())
                             {
                                 <div class="row">
@@ -157,6 +207,19 @@
                                         <div class="modal-body">
                                             <input type="hidden" name="scheduleId" value="@schedule.Id" />
                                             <input type="hidden" name="doctorId" value="@Model.DoctorId" />
+                                            <div class="mb-2">
+                                                <label>Clinic</label>
+                                                <select name="clinicId" class="form-control" required>
+                                                    <option value="">-- Select Clinic --</option>
+                                                    @if (Model.Clinics != null && Model.Clinics.Any())
+                                                    {
+                                                        @foreach (var clinic in Model.Clinics)
+                                                        {
+                                                            <option value="@clinic.Id">@clinic.Name - @clinic.location</option>
+                                                        }
+                                                    }
+                                                </select>
+                                            </div>
                                             <div class="mb-2">
                                                 <label>Date</label>
                                                 <input type="date" name="date" class="form-control" value="@schedule.Date.ToString("yyyy-MM-dd")" required />

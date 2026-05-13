@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using AdaPET.Models;
 
 namespace AdaPET.Models.ViewModels
 {
@@ -7,11 +8,15 @@ namespace AdaPET.Models.ViewModels
     {
         public int DoctorId { get; set; }
         public string DoctorName { get; set; } = string.Empty;
+        public int SelectedClinicId { get; set; }  // ✅ أضيفي السطر ده
+
         public string DoctorPhone { get; set; } = string.Empty;
         public string DoctorEmail { get; set; } = string.Empty;
         public string Specialization { get; set; } = string.Empty;
 
-        // ✅ غيري ده من List<Schedule> إلى List<ScheduleViewModel>
+        // ✅ قائمة العيادات الخاصة بالدكتور (للقائمة المنسدلة)
+        public List<Clinic> Clinics { get; set; } = new();
+
         public List<ScheduleViewModel> Schedules { get; set; } = new();
 
         public bool IsDoctor { get; set; }
@@ -24,6 +29,12 @@ namespace AdaPET.Models.ViewModels
         public TimeSpan StartTime { get; set; }
         public TimeSpan EndTime { get; set; }
         public bool IsAvailable { get; set; }
+
+        // ✅ معلومات العيادة (للعرض في الجدول)
+        public string ClinicName { get; set; } = string.Empty;
+        public string ClinicLocation { get; set; } = string.Empty;
+        public string ClinicPhone { get; set; } = string.Empty;
+
         public List<TimeSlotViewModel> TimeSlots { get; set; } = new();
     }
 
@@ -33,6 +44,6 @@ namespace AdaPET.Models.ViewModels
         public TimeSpan StartTime { get; set; }
         public TimeSpan EndTime { get; set; }
         public bool IsBooked { get; set; }
-        public int? UserId { get; set; }  // ✅ أضيفي ده لو محتاجة تعرفي مين حجز
+        public int? UserId { get; set; }
     }
 }

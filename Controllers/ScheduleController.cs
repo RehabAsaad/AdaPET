@@ -19,7 +19,7 @@ namespace AdaPET.Controllers
 
         // عرض مواعيد دكتور معين
         [HttpGet]
-        public async Task<IActionResult> Index(int doctorId)
+        public async Task<IActionResult> Index(int doctorId, int? clinicId = null)
         {
             if (doctorId <= 0)
             {
@@ -38,17 +38,21 @@ namespace AdaPET.Controllers
                 return RedirectToAction("Index", "Doctor");
             }
 
-            // جيب المواعيد المرتبطة بالدكتور
-            var schedules = await _context.Schedules
+            // جيب المواعيد المرتبطة بالدكتور مع العيادة (من غير فلتر عشان يظهر كل المواعيد)
+            var schedulesQuery = _context.Schedules
                 .Where(s => s.DoctorId == doctorId)
                 .Include(s => s.TimeSlots)
+                .Include(s => s.Clinic);
+
+            var schedules = await schedulesQuery
                 .OrderBy(s => s.Date)
                 .ThenBy(s => s.StartTime)
                 .ToListAsync();
 
-            // جيب العيادة
-            var clinic = await _context.Clinics
-                .FirstOrDefaultAsync(c => c.DoctorId == doctorId);
+            // جيب كل عيادات الدكتور
+            var clinics = await _context.Clinics
+                .Where(c => c.DoctorId == doctorId)
+                .ToListAsync();
 
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var isDoctor = User.IsInRole("Doctor") && currentUserId == doctorId.ToString();
@@ -62,6 +66,9 @@ namespace AdaPET.Controllers
                 StartTime = s.StartTime,
                 EndTime = s.EndTime,
                 IsAvailable = s.IsAvailable,
+                ClinicName = s.Clinic?.Name ?? "Main Clinic",
+                ClinicLocation = s.Clinic?.location ?? "",
+                ClinicPhone = s.Clinic?.Phone ?? "",
                 TimeSlots = s.TimeSlots?.Select(ts => new TimeSlotViewModel
                 {
                     Id = ts.Id,
@@ -76,26 +83,54 @@ namespace AdaPET.Controllers
             {
                 DoctorId = doctor.Id,
                 DoctorName = doctor.Name ?? "Unknown",
-                DoctorPhone = clinic?.Phone ?? doctor.phone ?? "Not available",
+                DoctorPhone = clinics.FirstOrDefault()?.Phone ?? doctor.phone ?? "Not available",
                 DoctorEmail = doctor.Email ?? "Not available",
                 Specialization = specialization,
                 Schedules = scheduleViewModels,
+                Clinics = clinics,
+                SelectedClinicId = 0,
                 IsDoctor = isDoctor
             };
 
             return View("~/Views/Doctor/Schedule.cshtml", viewModel);
         }
 
-        // إضافة موعد (للدكتور فقط) - مع توليد الفتحات تلقائياً
+        // إضافة موعد (للدكتور فقط) - مع توليد الفتحات تلقائياً وربطها بالعيادة
         [HttpPost]
         [Authorize(Roles = "Doctor")]
-        public async Task<IActionResult> AddSchedule(int doctorId, DateTime date, TimeSpan startTime, TimeSpan endTime)
+        public async Task<IActionResult> AddSchedule(int doctorId, int clinicId, DateTime date, TimeSpan startTime, TimeSpan endTime)
         {
             var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
             if (currentUserId != doctorId)
             {
                 TempData["Error"] = "You can only add schedules for yourself";
+                return RedirectToAction("Index", new { doctorId });
+            }
+
+            // ✅ التحقق: هل فيه موعد تاني في نفس اليوم ووقت متداخل (أي عيادة كانت)
+            var existingSchedule = await _context.Schedules
+                .Where(s => s.DoctorId == doctorId
+                            && s.Date == date
+                            && ((startTime >= s.StartTime && startTime < s.EndTime)
+                                || (endTime > s.StartTime && endTime <= s.EndTime)
+                                || (startTime <= s.StartTime && endTime >= s.EndTime)))
+                .FirstOrDefaultAsync();
+
+            if (existingSchedule != null)
+            {
+                var conflictingClinic = await _context.Clinics.FindAsync(existingSchedule.ClinicId);
+                TempData["Error"] = $"Cannot add schedule! You already have an appointment at this time in {(conflictingClinic?.Name ?? "another clinic")}.";
+                return RedirectToAction("Index", new { doctorId });
+            }
+
+            // ✅ تأكدي إن العيادة بتاعة الدكتور
+            var clinic = await _context.Clinics
+                .FirstOrDefaultAsync(c => c.Id == clinicId && c.DoctorId == doctorId);
+
+            if (clinic == null)
+            {
+                TempData["Error"] = "Invalid clinic selection";
                 return RedirectToAction("Index", new { doctorId });
             }
 
@@ -109,10 +144,10 @@ namespace AdaPET.Controllers
             var schedule = new Schedule
             {
                 DoctorId = doctorId,
+                ClinicId = clinicId,
                 Date = date,
                 StartTime = startTime,
                 EndTime = endTime,
-                IsAvailable = true,
                 Status = "Available"
             };
 
@@ -124,7 +159,7 @@ namespace AdaPET.Controllers
             _context.TimeSlots.AddRange(slots);
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = $"Schedule added successfully with {slots.Count} time slots (30 min each)";
+            TempData["Success"] = $"Schedule added successfully for {clinic.Name} with {slots.Count} time slots (30 min each)";
             return RedirectToAction("Index", new { doctorId });
         }
 
@@ -175,7 +210,7 @@ namespace AdaPET.Controllers
         // تعديل موعد
         [HttpPost]
         [Authorize(Roles = "Doctor")]
-        public async Task<IActionResult> EditSchedule(int scheduleId, int doctorId, DateTime date, TimeSpan startTime, TimeSpan endTime, bool isAvailable)
+        public async Task<IActionResult> EditSchedule(int scheduleId, int doctorId, int clinicId, DateTime date, TimeSpan startTime, TimeSpan endTime, bool isAvailable)
         {
             var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
@@ -194,16 +229,18 @@ namespace AdaPET.Controllers
                 // حفظ البيانات القديمة
                 var oldStartTime = schedule.StartTime;
                 var oldEndTime = schedule.EndTime;
+                var oldClinicId = schedule.ClinicId;
 
                 // تحديث البيانات
+                schedule.ClinicId = clinicId;
                 schedule.Date = date;
                 schedule.StartTime = startTime;
                 schedule.EndTime = endTime;
                 schedule.IsAvailable = isAvailable;
                 schedule.Status = isAvailable ? "Available" : "Booked";
 
-                // إذا تغير الوقت، أعد توليد الفتحات
-                if (oldStartTime != startTime || oldEndTime != endTime)
+                // إذا تغير الوقت أو العيادة، أعد توليد الفتحات
+                if (oldStartTime != startTime || oldEndTime != endTime || oldClinicId != clinicId)
                 {
                     // ✅ حذف الحجوزات المرتبطة أولاً
                     var appointments = await _context.Appointments
